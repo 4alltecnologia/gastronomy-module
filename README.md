@@ -337,6 +337,8 @@ Also on "AndroidManifest", it's required to add a Google Maps key (you can get o
 
 ### Additional iOS Setup
 
+```
+
 After running the ```npm i``` command, it's important to execute the ```react-native link``` command to link all dependencies to your project.
 
 Sometimes it's needed to run specific links like ```react-native link react-native-maps```.
