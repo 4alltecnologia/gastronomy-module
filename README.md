@@ -333,11 +333,7 @@ On "AndroidManifest", add the following permissions
 
 Also on "AndroidManifest", it's required to add a Google Maps key (you can get one at: https://developers.google.com/maps/documentation/android-api/signup?hl=pt-br), to allow the application to show maps
 
-```
-
 ### Additional iOS Setup
-
-```
 
 After running the ```npm i``` command, it's important to execute the ```react-native link``` command to link all dependencies to your project.
 
