@@ -1,0 +1,23 @@
+apply plugin: 'maven'
+def isReleaseBuild() {
+    return VERSION_NAME.contains("SNAPSHOT") == false
+}
+def getOutputDir() {
+    return PATH_LIB
+}
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file:///" + getOutputDir()) //can also be used to copy to local file
+            pom.groupId = GROUP
+            pom.artifactId = POM_ARTIFACT_ID
+            pom.version = VERSION_NAME
+            pom.project {
+                name POM_NAME
+                packaging POM_PACKAGING
+                description POM_DESCRIPTION
+            }
+        }
+    }
+}
+task compile(dependsOn: uploadArchives)
