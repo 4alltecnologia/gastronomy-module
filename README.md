@@ -22,7 +22,7 @@
 Put the module as dependency on the project`s package.json. 
 
 ```
-"gastronomy-module" : "GIT LINK"
+"gastronomy-module" : "git://github.com/4alltecnologia/gastronomy-module.git#v1.2.6"
 ```
 
 Run ```npm i``` to install
