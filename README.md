@@ -52,13 +52,13 @@ return (
                    hideMainBackButton = { hideMainBackButton }
                    hideButtonNoOrders = { hideButtonNoOrders }
                    checkNumber = { checkNumber }
-                   startLogin = { startLogin() }
-                   hasUserLogged = { hasUserLogged() }
-                   getUserLogged = { getUserLogged() }
-                   hasUserDataCompleted = { hasUserDataCompleted() }
-                   getCardID = { getCardID() }
-                   logout = { logout() }
-                   closeModule = { closeModule() }
+                   startLogin = { startLogin }
+                   hasUserLogged = { hasUserLogged }
+                   getUserLogged = { getUserLogged }
+                   hasUserDataCompleted = { hasUserDataCompleted }
+                   getCardID = { getCardID }
+                   logout = { logout }
+                   closeModule = { closeModule }
 	/>
 )
 ```
