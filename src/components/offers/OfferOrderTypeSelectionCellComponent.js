@@ -5,7 +5,7 @@ import Images from "../../assets/index"
 import { ORDER_STATUS_COMPONENT_STRINGS as OrderStrings } from "../../languages/index"
 import { screenWidthPercentage } from "../../utils"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../theme/Theme"
-import OrderTypeSelectionItem from "../orderTypeSelection/model/OrderTypeSelectionItem"
+import OrderTypeSelection from "../../models/orderType/OrderTypeSelection"
 
 export default class OfferOrderTypeSelectionCellComponent extends PureComponent {
 
@@ -64,7 +64,7 @@ export default class OfferOrderTypeSelectionCellComponent extends PureComponent 
 }
 
 OfferOrderTypeSelectionCellComponent.propTypes = {
-    orderTypeSelectionItem: PropTypes.instanceOf(OrderTypeSelectionItem).isRequired,
+    orderTypeSelectionItem: PropTypes.instanceOf(OrderTypeSelection).isRequired,
     onPressOrderType: PropTypes.func.isRequired,
 }
 

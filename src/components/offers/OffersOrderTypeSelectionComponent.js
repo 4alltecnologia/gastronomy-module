@@ -5,7 +5,7 @@ import Images from "../../assets/index"
 import { ORDER_TYPE_SELECTION_COMPONENT_STRINGS as OrderTypeStrings, OFFERS_CONTAINER_STRINGS as OffersStrings } from "../../languages/index"
 import { screenWidthPercentage } from "../../utils"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../theme/Theme"
-import OrderTypeSelectionItem from "../orderTypeSelection/model/OrderTypeSelectionItem"
+import OrderTypeSelection from "../../models/orderType/OrderTypeSelection"
 import OfferOrderTypeSelectionCellComponent from "./OfferOrderTypeSelectionCellComponent"
 
 export default class OffersOrderTypeSelectionComponent extends Component {
@@ -91,7 +91,7 @@ export default class OffersOrderTypeSelectionComponent extends Component {
 }
 
 OffersOrderTypeSelectionComponent.propTypes = {
-    orderTypeSelectionList: PropTypes.arrayOf(PropTypes.instanceOf(OrderTypeSelectionItem)).isRequired,
-    selectedOrderTypeSelectionList: PropTypes.arrayOf(PropTypes.instanceOf(OrderTypeSelectionItem)).isRequired,
+    orderTypeSelectionList: PropTypes.arrayOf(PropTypes.instanceOf(OrderTypeSelection)).isRequired,
+    selectedOrderTypeSelectionList: PropTypes.arrayOf(PropTypes.instanceOf(OrderTypeSelection)).isRequired,
     onPressOrderType: PropTypes.func.isRequired,
 }

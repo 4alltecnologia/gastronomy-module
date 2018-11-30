@@ -149,8 +149,8 @@ export default class UnityHeaderComponent extends Component {
             resizeMode: "cover"
         },
         pinDistance: {
-            height: 14,
-            width: 14,
+            height: 16,
+            width: 16,
             marginRight: 4,
             resizeMode: "contain",
             tintColor: BackgroundColor.primary
@@ -199,7 +199,7 @@ export default class UnityHeaderComponent extends Component {
                         </View>
                         { this.props.unityDistance ?
                             <View style = { this.stylesView.unityDistance } accessibilityLabel = "viewUnityDistance">
-                                <Image style = { this.stylesImage.pinDistance } source = { Images.icons.pin } accessibilityLabel = "imagePinDistance"/>
+                                <Image style = { this.stylesImage.pinDistance } source = { Images.icons.pinLocation } accessibilityLabel = "imagePinDistance"/>
                                 <Text style = { this.stylesText.unityDistance } accessibilityLabel = "textDistance">
                                     { this.props.unityDistance }
                                 </Text>
@@ -208,16 +208,14 @@ export default class UnityHeaderComponent extends Component {
                         }
                     </View>
                     <View style = { this.stylesView.unityInformationTags } accessibilityLabel = "viewUnityInformationTags">
-                        <View style = { [this.stylesView.unityInformation, { flex: this.state.hasTags ? 0.5 : 1 }] } accessibilityLabel = "viewUnityInformation">
-                            <Image style = { this.stylesImage.info } source = { this.props.showMenu ? Images.icons.info : Images.icons.forkKnife } accessibilityLabel = "imageInformation"/>
-                            <TouchableWithoutFeedback onPress = { () => this.props.onShowInformation() }>
-                                <View>
-                                    <Text style = { this.stylesText.information } accessibilityLabel = "textInformation">
-                                        { this.props.showMenu ? HEADER_COMPONENT_STRINGS.info : HEADER_COMPONENT_STRINGS.offersCatalog }
-                                    </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </View>
+                        <TouchableWithoutFeedback onPress = { () => this.props.onShowInformation() } accessibilityLabel = "viewUnityInformation">
+                            <View style = { [this.stylesView.unityInformation, { flex: this.state.hasTags ? 0.5 : 1 }] }>
+                                <Image style = { this.stylesImage.info } source = { this.props.showMenu ? Images.icons.info : Images.icons.forkKnife } accessibilityLabel = "imageInformation"/>
+                                <Text style = { this.stylesText.information } accessibilityLabel = "textInformation">
+                                    { this.props.showMenu ? HEADER_COMPONENT_STRINGS.info : HEADER_COMPONENT_STRINGS.offersCatalog }
+                                </Text>
+                            </View>
+                        </TouchableWithoutFeedback>
                         { this.state.hasTags ?
                             <View>
                                 <View style = { [this.stylesView.unityTags, { flex: this.state.hasTags ? 0.5 : 1 }] } accessibilityLabel = "viewUnityTags">

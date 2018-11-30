@@ -1,12 +1,14 @@
 import React, { Component } from "react"
 import { StyleSheet, View, Image, Text, ScrollView, Alert, RefreshControl, AppState } from "react-native"
+import { connect } from "react-redux"
+import { setCurrentAddress } from "../../redux/actions"
 import * as Errors from "../../errors"
 import { saveProduct } from "../../database/specialization/StorageProduct"
 import { resetModifiersSelected, getModifiersSelected, updateModifiersSelected } from "../../database/specialization/StorageModifiers"
 import { getOrder, saverOrder } from "../../database/specialization/StorageOrder"
-import { saveOrderType } from "../../database/specialization/StorageGeneral"
+import { saveOrderType, saveHeaders } from "../../database/specialization/StorageGeneral"
 import { GENERAL_STRINGS, ORDER_STATUS_CONTROLLER_STRINGS as OrderStrings} from "../../languages/index"
-import { getCurrentLocation, callNativeLocationSettings, IdOrderType, getOrderTypeIcon, screenWidthPercentage, screenHeightPercentage } from "../../utils"
+import { callNativeLocationSettings, IdOrderType, getOrderTypeIcon, screenWidthPercentage, screenHeightPercentage } from "../../utils"
 import { BackgroundColor } from "../../theme/Theme"
 import Images from "../../assets/index"
 import Spinner from "../../libs/customSpinner"
@@ -15,13 +17,13 @@ import NoOffersWarning from "../messages/NoOffersWarning"
 import NoLocationWarning from "../messages/NoLocationWarning"
 import NoLocationFoundWarning from "../messages/NoLocationFoundWarning"
 import CarouselController from "../carousel/CarouselController"
-import CarouselItem from "../carousel/model/CarouselItem"
-import OrderTypeSelectionItem from "../orderTypeSelection/model/OrderTypeSelectionItem"
-import OffersService from "./OffersService"
+import OrderTypeSelection from "../../models/orderType/OrderTypeSelection"
+import OffersService from "../../api/services/OffersService"
 import OffersOrderTypeSelectionComponent from "./OffersOrderTypeSelectionComponent"
 import OffersListComponent from "./OffersListComponent"
+import { ExternalMethods } from "../../native/Functions"
 
-export default class OffersController extends Component {
+class OffersController extends Component {
 
     stylesView = StyleSheet.create({
         general: {
@@ -78,6 +80,12 @@ export default class OffersController extends Component {
         this._getOffersNearby()
     }
 
+    componentWillReceiveProps(nextProps){
+        if (!(!!nextProps.currentAddress && !!this.props.currentAddress && nextProps.currentAddress.id === this.props.currentAddress.id)){
+            this._refreshOffers()
+        }
+    }
+
     _handleAppStateChange = (nextAppState) => {
         if (this.state.appState.match(/inactive|background/) && nextAppState === "active") {
             this._refreshOffers()
@@ -89,18 +97,18 @@ export default class OffersController extends Component {
     }
 
     _getOffersNearby() {
-        OffersService.getOffersNearby().then(data => {
+        OffersService.getOffersNearby(this.props.currentAddress).then(data => {
             let orderTypeSelectionList = []
             let selectedOrderTypeSelectionList = []
             let displayedOffersList = []
 
             if (data.deliveryOffersList.length > 0) {
-                orderTypeSelectionList.push(new OrderTypeSelectionItem(IdOrderType.DELIVERY.name, getOrderTypeIcon(IdOrderType.DELIVERY.id), IdOrderType.DELIVERY))
+                orderTypeSelectionList.push(new OrderTypeSelection(IdOrderType.DELIVERY.name, getOrderTypeIcon(IdOrderType.DELIVERY.id), IdOrderType.DELIVERY))
                 displayedOffersList = data.deliveryOffersList
             }
 
             if (data.takeawayOffersList.length > 0) {
-                orderTypeSelectionList.push(new OrderTypeSelectionItem(IdOrderType.TAKEAWAY.name, getOrderTypeIcon(IdOrderType.TAKEAWAY.id), IdOrderType.TAKEAWAY))
+                orderTypeSelectionList.push(new OrderTypeSelection(IdOrderType.TAKEAWAY.name, getOrderTypeIcon(IdOrderType.TAKEAWAY.id), IdOrderType.TAKEAWAY))
 
                 if (displayedOffersList.length <= 0) {
                     displayedOffersList = data.takeawayOffersList
@@ -149,7 +157,7 @@ export default class OffersController extends Component {
                     isFirstTime: false,
                     isRefreshing: false,
                     isDeviceConnected: true,
-                    hasNoOffers: true,
+                    hasNoOffers: false,
                     hasNoLocation: true,
                     isGpsOff: false
                 })
@@ -253,7 +261,7 @@ export default class OffersController extends Component {
                 }
             })
         } else {
-            this.props.navigation.navigate("ProductDetailContainer", { unity: unity, product: product, navigation: this.props.navigation, catalogNavigationKey: null })
+            this.props.navigation.navigate("ProductDetailContainer", { unity: unity, product: product, catalogNavigationKey: null })
         }
     }
 
@@ -307,14 +315,6 @@ export default class OffersController extends Component {
             return (
                 <NoOffersWarning refreshOffers = { this.refreshOffers }/>
             )
-        } else if (this.state.noLocation) {
-            return (
-                <NoLocationFoundWarning tryLocation = { this.refreshOffers }/>
-            )
-        } else if (this.state.isGpsOff) {
-            return (
-                <NoLocationWarning tryLocation = { this.refreshOffers }/>
-            )
         } else {
             return (
                 <View style = { this.stylesView.general } accessibilityLabel = "viewGeneralOffersController">
@@ -355,3 +355,10 @@ export default class OffersController extends Component {
         }
     }
 }
+
+export default connect(
+    state => ({
+        currentAddress: state.general.currentAddress
+    }),
+    { setCurrentAddress }
+) ( OffersController )

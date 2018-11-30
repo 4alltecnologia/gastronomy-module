@@ -172,7 +172,7 @@ export default class OfferCellComponent extends PureComponent {
                                     </Text>
                                 </View>
                                 <View style = { this.stylesView.unityDistance } accessibilityLabel = "viewUnityDistance">
-                                    <Image style = { [this.stylesImage.unityDistancePin, !this.props.offerItem.open ? { tintColor: "rgba(139,139,139, 0.5)" } : null] } source = { Images.icons.pin } accessibilityLabel = "imageUnityDistancePin"/>
+                                    <Image style = { [this.stylesImage.unityDistancePin, !this.props.offerItem.open ? { tintColor: "rgba(139,139,139, 0.5)" } : null] } source = { Images.icons.pinLocation } accessibilityLabel = "imageUnityDistancePin"/>
                                     <Text style = { [this.stylesText.unityDistance, !this.props.offerItem.open ? { color: "rgba(139,139,139, 0.5)" } : null] } accessibilityLabel = "textUnityDistance">
                                         { formatDistance(this.props.offerItem.unity.distance) }
                                     </Text>

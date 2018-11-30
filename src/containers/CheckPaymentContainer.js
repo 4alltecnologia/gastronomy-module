@@ -1,10 +1,10 @@
-import React, { Component } from "react"
-import { StyleSheet, View, StatusBar } from "react-native"
+import React, { PureComponent } from "react"
+import { StyleSheet, View } from "react-native"
 import { NavigationActions } from "react-navigation"
 import { FontColor } from "../theme/Theme"
 import CheckPaymentController from "../components/check/CheckPaymentController"
 
-export default class CheckPaymentContainer extends Component {
+export default class CheckPaymentContainer extends PureComponent {
 
     stylesView = StyleSheet.create({
         general: {
@@ -42,10 +42,8 @@ export default class CheckPaymentContainer extends Component {
     }
 
     render() {
-        let barStyle = FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
         return (
             <View style = { this.stylesView.general }>
-                <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
                 <CheckPaymentController unityDetails = { this.state.unityDetails }
                                         totalPrice = { this.state.totalPrice }
                                         navigateTo = { this.navigateTo }

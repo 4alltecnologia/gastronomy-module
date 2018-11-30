@@ -1,9 +1,10 @@
 import React, { PureComponent } from "react"
 import { StyleSheet, View, Text, TouchableOpacity, LayoutAnimation, UIManager, Platform } from "react-native"
 import { CachedImage } from "react-native-cached-image"
-import { screenWidthPercentage } from "../../../utils"
+import { screenWidthPercentage, FirebaseActions } from "../../../utils"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../../theme/Theme"
 import { PRODUCT_DESCRIPTION_COMPONENT_STRINGS as ProductDecriptionStrings } from "../../../languages/index"
+import { ExternalMethods } from "../../../native/Functions"
 
 export default class ProductDescriptionComponent extends PureComponent {
 
@@ -98,6 +99,8 @@ export default class ProductDescriptionComponent extends PureComponent {
 
         this.setState({
             isExpanded: !this.state.isExpanded
+        }, () => {
+            ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.SEE_MORE, { product: this.props.product.name })
         })
     }
 

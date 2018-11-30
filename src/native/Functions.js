@@ -22,6 +22,15 @@ let ExternalMethods = {
     },
     hasUserDataCompleted: () => {
         return
+    },
+    registerFirebaseEvent: () => {
+        return
+    },
+    registerFirebaseScreen: () => {
+        return
+    },
+    registerFirebaseUser: () => {
+        return
     }
 }
 
@@ -38,10 +47,8 @@ function setExternalMethods(props){
         if (!!props.startLogin) {
             ExternalMethods.hasUserLogged((isLogged) => {
                 if (!isLogged) {
-                    props.startLogin((phoneNumber, emailAddress, sessionToken) => {
-                        ExternalMethods.hasUserLogged((isLogged) => {
-                            if (callback) callback(isLogged)
-                        })
+                    props.startLogin((user) => {
+                        if (callback) callback(user)
                     })
                 } else {
                     if (callback) callback(true)
@@ -70,15 +77,12 @@ function setExternalMethods(props){
                 if (callback) {
                     if (response && response.hasOwnProperty("message")) {
                         const message = response.hasOwnProperty("message")
-
                         //Return Error and possible data response
-                        callback(message, response)
+                        callback(message, null)
                     } else if (response) {
-
                         //Return Success
                         callback(null, response)
                     } else {
-
                         //Return Error
                         callback("Get user error", null)
                     }
@@ -116,6 +120,24 @@ function setExternalMethods(props){
                     callback(successResult)
                 }
             })
+        }
+    }
+
+    ExternalMethods.registerFirebaseEvent = function(action, data) {
+        if (!!props.registerFirebaseEvent) {
+            props.registerFirebaseEvent(action, data)
+        }
+    }
+
+    ExternalMethods.registerFirebaseScreen = function(screen) {
+        if (!!props.registerFirebaseScreen) {
+            props.registerFirebaseScreen(screen)
+        }
+    }
+
+    ExternalMethods.registerFirebaseUser = function(user) {
+        if (!!props.registerFirebaseUser) {
+            props.registerFirebaseUser(user)
         }
     }
 }

@@ -110,10 +110,10 @@ export default class SuccessBottomComponent extends Component {
         },
         goToOrder: {
             fontFamily: FontFamily.font,
+            fontWeight: FontWeight.semibold,
             fontSize: 16,
-            fontWeight: FontWeight.medium,
+            color: "white",
             textAlign: "center",
-            color: FontColor.primary,
             backgroundColor: "transparent"
         }
     })
@@ -230,7 +230,7 @@ export default class SuccessBottomComponent extends Component {
                 <TouchableOpacity style = { this.stylesButton.buttonGoToOrder } onPress = { () => { this.props.onFinishTapped() } } accessibilityLabel = "touchableGoToOrder">
                     <LinearGradient colors = {[BackgroundColor.primary, BackgroundColor.gradient]} style = { this.stylesButton.buttonGoToOrderGradient } accessibilityLabel = "linearGradientGoToOrder">
                         <Text style = { this.stylesText.goToOrder } accessibilityLabel = "textGoToOrder">
-                            { SuccessStrings.finish.toUpperCase() }
+                            { SuccessStrings.finish }
                         </Text>
                     </LinearGradient>
                 </TouchableOpacity>

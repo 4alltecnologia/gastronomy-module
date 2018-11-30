@@ -3,7 +3,7 @@ import { Image, ImageBackground, View, Text, TouchableOpacity, StyleSheet } from
 import { FontFamily, FontColor, FontWeight, BackgroundColor } from "../../theme/Theme"
 import { PAYMENT_NOW_CREDIT_CARD_COMPONENT_STRINGS as PaymentStrings } from "../../languages/index"
 import Images from "../../assets/index"
-import { paymentMethod } from "../../utils"
+import { PAYMENT_METHOD } from "../../utils"
 import SelectCreditCardComponent from "./SelectCreditCardComponent"
 
 export default class PaymentNowCreditCardComponent extends Component {
@@ -116,7 +116,7 @@ export default class PaymentNowCreditCardComponent extends Component {
         super(props)
 
         this.state = {
-            isCreditCard: props.selectedPaymentMethod.name == paymentMethod.CREDITCARD.name ? true : false,
+            isCreditCard: props.selectedPaymentMethod.name == PAYMENT_METHOD.CREDITCARD.name ? true : false,
             selectedPaymentMethod: props.selectedPaymentMethod
         }
 
@@ -128,13 +128,13 @@ export default class PaymentNowCreditCardComponent extends Component {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            isCreditCard: nextProps.selectedPaymentMethod.name == paymentMethod.CREDITCARD.name ? true : false,
+            isCreditCard: nextProps.selectedPaymentMethod.name == PAYMENT_METHOD.CREDITCARD.name ? true : false,
             selectedPaymentMethod: nextProps.selectedPaymentMethod
         })
     }
 
     _onIsCreditCard() {
-        this.props.onPayNowTapped(paymentMethod.CREDITCARD)
+        this.props.onPayNowTapped(PAYMENT_METHOD.CREDITCARD)
     }
 
     _onChangePaymentMethod(newPaymentMethod) {

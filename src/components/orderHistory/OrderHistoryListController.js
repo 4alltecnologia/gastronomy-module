@@ -1,13 +1,16 @@
 import React, { Component } from "react"
 import { Alert, View, ScrollView, StyleSheet } from "react-native"
 import { connect } from "react-redux"
-import { isDeviceConnected } from "../../utils"
-import { getOrderHistory } from "../../api/ApiRequests"
+import { isDeviceConnected, FirebaseActions } from "../../utils"
+import { getOrderHistory } from "../../api/APIRequests"
 import { ExternalMethods } from "../../native/Functions"
 import NoOrdersWarning from "../../components/messages/NoOrdersWarning"
 import NoInternetWarning from "../../components/messages/NoInternetWarning"
 import NoSessionWarning from "../../components/messages/NoSessionWarning"
 import OrderHistoryListComponent from "./OrderHistoryListComponent"
+import User from "../../models/User"
+import * as Errors from "../../errors"
+import OrderHistoryService from "../../api/services/OrderHistoryService"
 
 class OrderHistoryListController extends Component {
 
@@ -22,60 +25,46 @@ class OrderHistoryListController extends Component {
         super(props)
 
         this.state = {
-            isDeviceConnected: true,
-            isUserLoggedIn: true,
             orderList: [],
             isRefreshing: true,
-            isFirstTime: true
+            error: null
         }
 
         this.callLogin = this._callLogin.bind(this)
+        this.refreshList = this._refreshList.bind(this)
     }
 
     componentWillMount() {
         this._getOrderHistory()
     }
 
-    _getOrderHistory() {
-        isDeviceConnected(isConnected => {
-            if (isConnected) {
-                ExternalMethods.hasUserLogged((isLogged) => {
-                    if (isLogged) {
-                        getOrderHistory().then(orderList => {
-                            this.setState({
-                                orderList: orderList,
-                                isDeviceConnected: true,
-                                isRefreshing: false,
-                                isFirstTime: false
-                            })
-                        }).catch(error => {
-                            this.setState({
-                                orderList: [],
-                                isDeviceConnected: true,
-                                isRefreshing: false,
-                                isFirstTime: false
-                            })
-                        })
-                    } else {
-                        this.setState({
-                            isDeviceConnected: true,
-                            isUserLoggedIn: false,
-                            isRefreshing: false,
-                            isFirstTime: false
-                        })
-                    }
-                })
-            } else {
-                this.setState({
-                    isDeviceConnected: false,
-                    isRefreshing: false,
-                    isFirstTime: false
-                })
-            }
+    componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.ORDER_HISTORY.screen)
+
+        this.props.navigation.addListener("willFocus", payload => {
+            ExternalMethods.registerFirebaseScreen(FirebaseActions.ORDER_HISTORY.screen)
+
+            this._getOrderHistory()
         })
     }
 
-    _refreshList(isPullToRefresh) {
+    _getOrderHistory() {
+        OrderHistoryService.gerOrderHistory().then(result => {
+            this.setState({
+                orderList: result,
+                isRefreshing: false,
+                error: null
+            })
+        }).catch(error => {
+            this.setState({
+                orderList: [],
+                isRefreshing: false,
+                error: error
+            })
+        })
+    }
+
+    _refreshList(isPullToRefresh = false) {
         this.setState({
             orderList: [],
             isRefreshing: isPullToRefresh
@@ -83,45 +72,50 @@ class OrderHistoryListController extends Component {
     }
 
     _callLogin() {
-        ExternalMethods.startLogin((resultLogin) => {
+        ExternalMethods.startLogin((user) => {
+            ExternalMethods.registerFirebaseUser(new User(user))
+
             this.setState({
-                isUserLoggedIn: resultLogin,
+                error: !!user ? null : new Errors.LoginException(),
                 isRefreshing: true
             }, () => this._getOrderHistory() )
         })
     }
 
-    _renderNoInternet() {
-        return (
-            <NoInternetWarning tryInternet = { () => this._refreshList(false) }/>
-        )
-    }
-
-    _renderNotLoggedIn() {
-        return (
-            <NoSessionWarning methodLogin = { this.callLogin } />
-        )
-    }
-
-    _renderNoOrders() {
-        return (
-            <NoOrdersWarning isOffersMode = { this.props.isOffersMode } hideButtonNoOrders = { this.props.hideButtonNoOrders } updateNoOrders = { () => this.props.updateNoOrders() }/>
-        )
+    _renderError() {
+        if (this.state.error instanceof Errors.ConnectionException) {
+            return (
+                <NoInternetWarning tryInternet = { this.refreshList }/>
+            )
+        } else if (this.state.error instanceof Errors.LoginException) {
+            return (
+                <NoSessionWarning methodLogin = { this.callLogin } />
+            )
+        } else if (this.state.error instanceof Errors.NoOrdersException) {
+            return (
+                <NoOrdersWarning isDiscountsClubMode = { this.props.isDiscountsClubMode }
+                                 hideButtonNoOrders = { this.props.hideButtonNoOrders }
+                                 updateNoOrders = { this.props.updateNoOrders }
+                />
+            )
+        } else {
+            return (
+                <View/>
+            )
+        }
     }
 
     render() {
-        if (!this.state.isDeviceConnected) {
-            return this._renderNoInternet()
-        } else if (!this.state.isUserLoggedIn) {
-            return this._renderNotLoggedIn()
-        } else if (!this.state.isRefreshing && this.state.orderList.length < 1) {
-            return this._renderNoOrders()
+        if (!!this.state.error) {
+            return (
+                this._renderError()
+            )
         } else {
             return (
                 <View style = { this.stylesView.general }>
                     <OrderHistoryListComponent orderList = { this.state.orderList }
                                                isRefreshing = { this.state.isRefreshing }
-                                               refreshList = { () => this._refreshList(true) }
+                                               refreshList = { this.refreshList }
                     />
                 </View>
             )
@@ -131,7 +125,7 @@ class OrderHistoryListController extends Component {
 
 export default connect(
     state => ({
-        isOffersMode: state.general.isOffersMode
+        isDiscountsClubMode: state.general.isDiscountsClubMode
     }),
     { }
 )(OrderHistoryListController)

@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { StyleSheet, View, Text, TouchableOpacity, Alert, Image, ImageBackground } from "react-native"
 import { BackgroundColor, FontFamily, FontWeight } from "../../theme/Theme"
 import Images from "../../assets/index"
-import { paymentMethod } from "../../utils"
+import { PAYMENT_METHOD } from "../../utils"
 import { SELECT_CREDIT_CARD_COMPONENT_STRINGS as SelectCreditCardStrings } from "../../languages/index"
 
 export default class SelectCreditCardComponent extends Component {
@@ -105,13 +105,13 @@ export default class SelectCreditCardComponent extends Component {
         super(props)
 
         this.state = {
-            isSelected: props.selectedPaymentMethod.name == paymentMethod.CREDITCARD.name ? true : false
+            isSelected: props.selectedPaymentMethod.name == PAYMENT_METHOD.CREDITCARD.name ? true : false
         }
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            isSelected: nextProps.selectedPaymentMethod.name == paymentMethod.CREDITCARD.name ? true : false
+            isSelected: nextProps.selectedPaymentMethod.name == PAYMENT_METHOD.CREDITCARD.name ? true : false
         })
     }
 
@@ -121,7 +121,7 @@ export default class SelectCreditCardComponent extends Component {
 
     _renderCard() {
         return (
-            <TouchableOpacity style = { this.stylesButton.general } onPress = { () => this.onChangePaymentMethod(paymentMethod.CREDITCARD) } accessibilityLabel = "touchableGeneral" >
+            <TouchableOpacity style = { this.stylesButton.general } onPress = { () => this.onChangePaymentMethod(PAYMENT_METHOD.CREDITCARD) } accessibilityLabel = "touchableGeneral" >
                 <Image style = { this.stylesImage.icon }
                        source = { this.props.icon }
                        accessibilityLabel = "imageIcon"

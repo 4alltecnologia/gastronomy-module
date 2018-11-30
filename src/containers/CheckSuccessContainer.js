@@ -1,10 +1,11 @@
-import React, { Component } from "react"
+import React, { PureComponent } from "react"
 import { BackHandler } from "react-native"
 import { NavigationActions } from "react-navigation"
 import CheckSuccessController from "../components/check/CheckSuccessController"
 import { ExternalMethods } from "../native/Functions"
+import { FirebaseActions } from "../utils"
 
-export default class CheckSuccessContainer extends Component {
+export default class CheckSuccessContainer extends PureComponent {
 
     constructor(props) {
         super(props)
@@ -18,6 +19,7 @@ export default class CheckSuccessContainer extends Component {
     }
 
     componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.CHECK_SUCCESS.screen)
         BackHandler.addEventListener("hardwareBackPress", this.handleBackButton)
     }
 
@@ -30,6 +32,7 @@ export default class CheckSuccessContainer extends Component {
     }
 
     _onFinishTapped() {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CHECK_SUCCESS.actions.CLOSE, {})
         ExternalMethods.closeModule()
     }
 

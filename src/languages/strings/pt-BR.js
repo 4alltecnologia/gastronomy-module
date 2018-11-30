@@ -15,12 +15,14 @@ const GENERAL_STRINGS = {
     emptyCheck: "Nenhum item selecionado",
     unityClosed: "A loja encontra-se fechada no momento",
     openOrder: "Você possui um pedido em aberto no momento",
-    next: "AVANÇAR",
+    next: "Avançar",
     noOrders: "Você ainda não efetuou pedidos",
     minutes: "minutos",
     min: "min",
     hours: "horas",
-    days: "dias"
+    days: "dias",
+    youAreAt: "Você está em:",
+    buy: "Comprar"
 }
 
 const NO_DATA_WARNING = {
@@ -31,31 +33,31 @@ const NO_DATA_WARNING = {
 const NO_ADDRESSES_WARNING = {
     firstMessage:"Não encontramos nenhum endereço cadastrado...",
     secondMessage:"Adicione seus endereços e agilize a solicitação de pedidos.",
-    newAddress: "INFORMAR NOVO ENDEREÇO"
+    newAddress: "Informar Novo Endereço"
 }
 
 const NO_INTERNET_WARNING = {
     firstMessage:"Não conseguimos conectar com a internet…",
     secondMessage:"Houve um problema de conexão com a internet, por favor tente novamente mais tarde.",
-    tryAgain: "Tentar novamente"
+    tryAgain: "Tentar Novamente"
 }
 
 const NO_LOCATION_WARNING = {
     firstMessage:"Antes de prosseguir, precisamos saber onde você está...",
     secondMessage:"Por favor ative o seu gps para detectarmos sua localização",
-    tryAgain: "Tentar novamente"
+    tryAgain: "Tentar Novamente"
 }
 
 const NO_LOCATION_FOUND_WARNING = {
     firstMessage:"Ops! Não foi possível detectar a sua localização",
-    secondMessage:"Por favor tente novamente mais tarde",
-    tryAgain: "Tentar novamente"
+    secondMessage:"Selecione um endereço para acessar os recursos do App.",
+    tryAgain: "Selecionar Endereço"
 }
 
 const NO_UNITIES_WARNING = {
     title: "Opa, parece que não há nenhum estabelecimento próximo",
     message: "Estamos trabalhando para levar mais estabelecimentos até você",
-    buttonTitle: "Tentar novamente"
+    buttonTitle: "Tentar Novamente"
 }
 
 const NO_RESULTS_WARNING = {
@@ -72,19 +74,19 @@ const NO_SESSION_WARNING = {
 const NO_ORDERS_WARNING = {
     firstMessage: "Você ainda não possui nenhum pedido em andamento.",
     secondMessage: "Acesse a seção de estabelecimentos e confira as opções disponíveis.",
-    button: "Ver estabelecimentos!"
+    button: "Ver Estabelecimentos"
 }
 
 const NO_ORDERS_OFFERS_WARNING = {
     firstMessage: "Você ainda não possui nenhum pedido em andamento.",
     secondMessage: "Acesse a seção de ofertas e confira as opções disponíveis.",
-    button: "Ver ofertas!"
+    button: "Ver Ofertas"
 }
 
 const NO_OFFERS_WARNING = {
     title: "Opa, parece que não existe nenhuma oferta próxima",
     message: "Estamos trabalhando para levar ofertas até você",
-    buttonTitle: "Tentar novamente"
+    buttonTitle: "Tentar Novamente"
 }
 
 const NO_ADDRESS_FOUND_WARNING = {
@@ -97,7 +99,7 @@ const NO_ADDRESS_FOUND_WARNING = {
 const NO_PRODUCTS_WARNING = {
     firstMessage: "Nada por aqui",
     secondMessage: "Sua comanda ainda está vazia. Para adicionar itens, acesse o cardápio e faça seu pedido.",
-    buttonMessage: "Ir para o cardápio"
+    buttonMessage: "Ir Para o Cardápio"
 }
 
 const NATIVE_FUNCTIONS_WARNING = {
@@ -127,8 +129,8 @@ const CHECK_PRODUCT_LIST_COMPONENT = {
     tips: "Taxa de serviço (10%)",
     total: "Total",
     topMessage: "Os valores referem-se ao valor unitário de cada item",
-    addProducts: "ADICIONAR MAIS PRODUTOS",
-    payCheck: "FINALIZAR COMANDA"
+    addProducts: "Adicionar Mais Produtos",
+    payCheck: "Finalizar Comanda"
 }
 
 //CHECK PAYMENT CONTAINER
@@ -139,7 +141,7 @@ const CHECK_PAYMENT_CONTAINER = {
 const CHECK_PAYMENT_COMPONENT = {
     totalToPay: "Valor a pagar:",
     selectPaymentMethod: "Selecione uma forma de pagamento:",
-    payNow: "PAGAR AGORA"
+    payNow: "Pagar Agora"
 }
 
 //CHECK SUCCESS CONTAINER
@@ -148,9 +150,9 @@ const CHECK_SUCCESS_CONTAINER = {
 }
 
 const CHECK_SUCCESS_COMPONENT = {
-    firstMessage: "MUITO OBRIGADO!",
-    secondMessage: "PAGAMENTO REALIZADO",
-    finish: "FECHAR",
+    firstMessage: "Muito obrigado!",
+    secondMessage: "Pagamento realizado",
+    finish: "Fechar",
     paidValue: "Valor pago:"
 }
 
@@ -168,10 +170,15 @@ const CATALOG_CELL_COMPONENT = {
 }
 
 //UNITY INFO CONTAINER
-const UNITY_HEADER_SECTION_COMPONENT = {
-    contact: "Contato",
-    location: "Localização",
-    shifts: "Horário de Funcionamento",
+const PAYMENT_METHOD = {
+    onlinePayment: "Pagamento online",
+    onlinePaymentMessage: "(Crédito / Carteira 4all)",
+    offlinePayment: "Pagamento na entrega",
+    offlinePaymentMessage: "(Débito / Refeição)"
+}
+
+const WORKING_HOURS = {
+    workingHours: "Horários de atendimento"
 }
 
 const UNITY_SHIFTS_COMPONENT = {
@@ -201,7 +208,7 @@ const UNITY_INFORMATION_COMPONENT = {
 //ORDER TYPE SELECTION CONTAINER
 const ORDER_TYPE_SELECTION_COMPONENT = {
     headerTitle: "Gastronomia",
-    selectOrderType: "Por favor, selecione como você quer receber o seu pedido"
+    selectOrderType: "Por favor, selecione como você quer fazer o seu pedido"
 }
 
 //SUCCESS CONTAINER
@@ -230,7 +237,7 @@ const SUCCESS_BOTTOM_COMPONENT = {
     subtotal: "Subtotal",
     total: "Total",
     code: "Código ",
-    finish: "FECHAR",
+    finish: "Fechar",
     todayFormat: "DD [de] MMMM [de] YYYY"
 }
 
@@ -275,7 +282,7 @@ const PAYMENT_ON_DELIVERY_COMPONENT = {
     takeaway: "Retirada ",
     totalValue: "Valor total:",
     free: "Grátis",
-    placeOrder: "FINALIZAR PEDIDO"
+    placeOrder: "Finalizar Pedido"
 }
 
 const PAY_WITH_MONEY_COMPONENT = {
@@ -323,13 +330,22 @@ const SELECT_CREDIT_CARD_COMPONENT = {
 }
 
 const ADDRESS_LIST_CONTAINER = {
-    addressPlaceholder: "Endereço",
-    title: "Meus endereços",
-    attention: "Atenção",
+    title: "Endereço",
+    listTitle: "Olá ",
+    listTitleVisitor: "Olá visitante!",
+    listSubtitle: "Onde você quer receber seu pedido?",
     wantToDeleteAddress: "Deseja apagar o endereço selecionado?",
-    newAddress: "INFORMAR NOVO ENDEREÇO",
-    number: "nº",
-    zip: "CEP"
+    newAddress: "Adicionar Novo Endereço",
+    changeAddress: "Trocar Endereço",
+    searching: "Buscando Localização Atual",
+    currentLocation: "Localização Atual",
+    disabled: "Desativada",
+    noLocation: "Não foi possível encontrar sua localização",
+    addressNotRegistered: "Endereço não cadastrado",
+    activateGps: "Ativar GPS",
+    register: "cadastrar",
+    home: "Casa",
+    work: "Trabalho"
 }
 
 const PRICE_SPECIFICATION = {
@@ -340,51 +356,37 @@ const PRICE_SPECIFICATION = {
 const PRODUCT_DETAIL_COMPONENT = {
     observation: "Observações",
     unitaryPrice: "Valor unitário: ",
-    add: "ADICIONAR",
-    placeholderObs: "Adicionar comentário (sem cebola, bem passado, etc..)"
+    add: "Adicionar",
+    placeholderObs: "Alguma observação sobre o produto? Comente!"
 }
 
 const ADDRESS_SEARCH_CONTAINER = {
-    title: "Informar um endereço",
-    byStreetAddress: "POR ENDEREÇO",
-    byGeolocation: "POR LOCALIZAÇÃO",
-    byZipCode: "POR CEP"
+    titleHome: "Cadastrar Casa",
+    titleWork: "Cadastrar Trabalho",
+    titleAddress: "Cadastrar Endereço",
+    placeholder: "Insira o Endereço ou o CEP"
 }
 
 const ADDRESS_DETAILS_CONTAINER = {
     title: "Informe o endereço",
     number: "nº",
     zip: "CEP",
+    name: "Nome",
     streetNumber: "Número",
-    complement: "Complemento (caso houver)",
+    complement: "Complemento (se houver)",
+    reference: "Referência (opcional)",
     identifyAddress: "Identifique o endereço:",
     home: "Casa",
     work: "Trabalho",
+    address: "Endereço",
     other: "Outro",
-    nameTheAddress: "Dê um nome para este endereço:",
-    typeAddressName: "Digite o nome do endereço",
-    save: "SALVAR",
+    save: "Salvar",
     fieldRequired: "Número (campo obrigatório)",
     attention: "Atenção",
     invalidAddress: "O endereço não possui o número informado",
     invalidZipCode: "O endereço não possui o CEP informado",
     defaultCountry: "Brasil",
     serverError: "Houve um erro no servidor, por favor tente novamente mais tarde"
-}
-
-const ADDRESS_SEARCH_NAME_CONTAINER = {
-    title: "Informe um endereço:",
-    placeholder: "Digite o nome da rua"
-}
-
-const ADDRESS_SEARCH_ZIPCODE_CONTAINER = {
-    title: "Informe o CEP:",
-    placeholder: "Digite o CEP",
-    defaultCountry: "Brasil"
-}
-
-const ADDRESS_SEARCH_GEOLOCATION_CONTAINER = {
-    title: "Confirme o endereço:"
 }
 
 const LOCATION_SETTINGS = {
@@ -394,9 +396,9 @@ const LOCATION_SETTINGS = {
 }
 
 const MODAL_ZIPCODE_COMPONENT = {
-    warningTitle: "Atenção",
-    warningDescription: "Não conseguimos recuperar todas as suas informações do endereço, por favor complete o seu CEP abaixo.",
-    confirmButton: "Confirmar"
+    title: "Confirmação de CEP",
+    subtitle: "Confira seu CEP abaixo, se este não for o número exato você pode corrigí-lo.",
+    confirmButton: "Confirmar CEP"
 }
 
 //CART CONTAINER
@@ -423,7 +425,7 @@ const CART_CONTAINER = {
     },
     paymentCartComponent:{
         totalPrice:"Valor total",
-        titleButtomPayment:"ESCOLHER FORMA DE PAGAMENTO"
+        titleButtomPayment:"Escolher Forma de Pagamento"
     },
     cartController:{
         loginFail:"Falha no login. Tente novamente mais tarde!",
@@ -468,6 +470,55 @@ const CART_CONTAINER = {
     }
 }
 
+//DISCOUNTS CLUB CONTAINER
+const DISCOUNTS_CLUB_CONTAINER = {
+    title: "Clube de Descontos",
+    featuredComponent: {
+        title: "Destaques"
+    },
+    loggedInComponent: {
+        title: "Olá, ",
+        message: "Aproveite agora as ofertas exclusivas do nosso Clube de Ofertas!",
+        // message: "A qualquer momento acesse sua conta e confira seus cupons de desconto",
+        buttonMessage: "Ver meus cupons"
+    },
+    loggedOffComponent: {
+        title: "Olá, seja bem vindo!",
+        message: "Faça seu login ou cadastre-se para ter acesso à ofertas imperdíveis",
+        buttonMessage: "Acessar"
+    },
+    statementLoggedInComponent: {
+        mySavings: "Minha economia",
+        goToStatement: "Ver extrato"
+    },
+    statementLoggedOffComponent: {
+        title: "CONTADOR DE DESCONTOS",
+        message: "Aproveite as ofertas exclusivas e comece a economizar"
+    },
+    offerDetailsComponent: {
+        offerExpiration: "Válido até: ",
+        offerDescription: "Descrição da oferta",
+        address: "Endereço",
+        workingHours: "Horários de atendimento"
+    }
+}
+
+const DISCOUNTS_CLUB_OFFERS_GROUP_CONTAINER = {
+    voucher: "Vale",
+    coupon: "Cupom"
+}
+
+const DISCOUNTS_CLUB_TRADESMAN_DETAILS_CONTAINER = {
+    about: "Sobre",
+    access: "Acessar",
+    address: "Endereço",
+    call: "Ligar",
+    chatWith: "Conversar",
+    contact: "Entre em contato",
+    enterProfile: "Ver perfil",
+    workingHours: "Horário de atendimento"
+}
+
 //PRODUCT CONTAINER
 const PRODUCT_CONTAINER = {
     buttonAddProduct: "Adicionar ao carrinho",
@@ -495,6 +546,7 @@ const ORDER_STATUS_CONTAINER = {
 }
 
 const ORDER_STATUS_COMPONENT = {
+    freeOrderDelivery: "Grátis",
     orderNumber: "Número do Pedido",
     statusTitle: "Status",
     orderReceived: "Pedido Recebido",
@@ -555,17 +607,17 @@ const ORDER_TYPE ={
 //LOGIN USER COMPONENT
 const LOGIN_USER_COMPONENT = {
     title: "Muito bem!",
-    messageOrder: "Para continuar seu pedido, efetue login",
-    messageCheck: "Para realizar o pagamento da comanda, efetue login",
-    buttonSignIn: "EFETUAR LOGIN",
-    buttonSignUp: "NÃO POSSUO CADASTRO"
+    messageOrder: "Para continuar seu pedido, faça login",
+    messageCheck: "Para realizar o pagamento da comanda, faça login",
+    buttonSignIn: "Fazer Login",
+    buttonSignUp: "Não Possuo Cadastro"
 }
 
 //SELECT ADDRESS COMPONENT
 const SELECT_ADDRESS_COMPONENT = {
     title: "Quase lá!",
     subtitle: "Agora você precisa selecionar o endereço de entrega",
-    buttonSelectAddress: "SELECIONAR ENDEREÇO",
+    buttonSelectAddress: "Selecionar Endereço",
 }
 
 //CHECK BAR COMPONENT
@@ -583,13 +635,13 @@ const CHECK_BAR_COMPONENT = {
 
 //MODAL_TABLE_NUMBER COMPONENT
 const MODAL_TABLE_NUMBER_COMPONENT = {
-    title: "AJUDE-NOS A TE ENCONTRAR",
-    subtitle: "INFORME SUA MESA"
+    title: "Ajude-nos a te encontrar",
+    subtitle: "Informe sua mesa"
 }
 
 const MODAL_SUCCESS_ALERT_COMPONENT = {
-    yourOrder: "SEU PEDIDO FOI",
-    confirmed: "CONFIRMADO",
+    yourOrder: "Seu pedido foi",
+    confirmed: "Confirmado",
     textConfirmedOrder: "Seu pedido foi confirmado e logo será entregue em sua mesa. Caso queira ver detalhes do que já pediu, basta acessar a sua comanda no botão ver comanda.",
     gotIt: "OK"
 }
@@ -630,10 +682,12 @@ module.exports = {
     CHECK_PRODUCT_LIST_COMPONENT,
     CHECK_PAYMENT_CONTAINER,
     CHECK_PAYMENT_COMPONENT,
+    DISCOUNTS_CLUB_CONTAINER,
+    DISCOUNTS_CLUB_OFFERS_GROUP_CONTAINER,
+    DISCOUNTS_CLUB_TRADESMAN_DETAILS_CONTAINER,
     TAB_CONTAINER,
     OFFERS_CONTAINER,
     HEADER_COMPONENT,
-    UNITY_HEADER_SECTION_COMPONENT,
     UNITY_SHIFTS_COMPONENT,
     UNITY_CONTACT_COMPONENT,
     UNITY_INFORMATION_COMPONENT,
@@ -654,15 +708,14 @@ module.exports = {
     PAY_WITH_FOOD_TICKET_COMPONENT,
     PAY_WITH_DEBIT_CARD_COMPONENT,
     PAYMENT_CONTROLLER,
+    PAYMENT_METHOD,
+    WORKING_HOURS,
     WALLET_ACCOUNT_BALANCE_COMPONENT,
     SELECT_CREDIT_CARD_COMPONENT,
     PRICE_SPECIFICATION,
     PRODUCT_DETAIL_COMPONENT,
     ADDRESS_LIST_CONTAINER,
     ADDRESS_SEARCH_CONTAINER,
-    ADDRESS_SEARCH_NAME_CONTAINER,
-    ADDRESS_SEARCH_ZIPCODE_CONTAINER,
-    ADDRESS_SEARCH_GEOLOCATION_CONTAINER,
     ADDRESS_DETAILS_CONTAINER,
     LOCATION_SETTINGS,
     CART_CONTAINER,

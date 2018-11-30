@@ -75,6 +75,7 @@ export function OptionsModal(props: Props) {
                             return (
                                 <TouchableOpacity key = { index }
                                                   style = { stylesButton.optionItem }
+                                                  activeOpacity = { 0.75 }
                                                   onPress = { () => props.onSelect(item, index) }
                                                   accessibilityLabel = "touchableSelectModal">
                                     <Text style={[stylesText.itemList, props.itemListStyle]} accessibilityLabel = "textItemModal">

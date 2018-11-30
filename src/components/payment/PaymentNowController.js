@@ -2,8 +2,8 @@ import React, { PureComponent } from "react"
 import { View, StyleSheet, Alert } from "react-native"
 import { GENERAL_STRINGS, PAYMENT_NOW_COMPONENT_STRINGS as PaymentStrings } from "../../languages/index"
 import { ExternalMethods } from "../../native/Functions"
-import { getWalletBalance, listCards } from "../../api/ApiRequests"
-import { paymentMethod, isDeviceConnected } from "../../utils"
+import { getWalletBalance, listCards } from "../../api/APIRequests"
+import { PAYMENT_METHOD, isDeviceConnected } from "../../utils"
 import { BackgroundColor } from "../../theme/Theme"
 import Images from "../../assets/index"
 import Spinner from "../../libs/customSpinner"
@@ -11,6 +11,7 @@ import Spinner from "../../libs/customSpinner"
 import PayHeaderComponent from "./PayHeaderComponent"
 import PaymentNowCreditCardComponent from "./PaymentNowCreditCardComponent"
 import PaymentNowWalletComponent from "./PaymentNowWalletComponent"
+import User from "../../models/User"
 
 export default class PaymentNowController extends PureComponent {
 
@@ -56,7 +57,7 @@ export default class PaymentNowController extends PureComponent {
 
     _onChangePaymentMethod(newPaymentMethod) {
         this.props.onChangePaymentMethod(newPaymentMethod)
-        newPaymentMethod == paymentMethod.CREDITCARD ? this.props.onCreditCardChanged(this.state.cardId) : null
+        newPaymentMethod == PAYMENT_METHOD.CREDITCARD ? this.props.onCreditCardChanged(this.state.cardId) : null
     }
 
     _getUserBalance() {
@@ -66,10 +67,11 @@ export default class PaymentNowController extends PureComponent {
             if (isConnected) {
                 ExternalMethods.getUserLogged((error, resultUserLogged) => {
                     if (error) {
-                        ExternalMethods.startLogin((resultLogin) => {
-                            getWalletBalance(result.sessionToken).then(responseBalance => {
+                        ExternalMethods.startLogin((user) => {
+                            ExternalMethods.registerFirebaseUser(new User(user))
+                            getWalletBalance(user.sessionToken).then(responseBalance => {
                                 if (responseBalance.success) {
-                                    this._callListCards(resultLogin.sessionToken, responseBalance.balance)
+                                    this._callListCards(user.sessionToken, responseBalance.balance)
                                 } else {
                                     Alert.alert(GENERAL_STRINGS.warning, responseBalance.errorMessage)
                                 }
@@ -193,8 +195,9 @@ export default class PaymentNowController extends PureComponent {
             }, () => this.props.onLoadingCards(true))
             ExternalMethods.getUserLogged((error, resultUserLogged) => {
                 if (error) {
-                    ExternalMethods.startLogin((resultLogin) => {
-                        this._callListCards(resultLogin.sessionToken)
+                    ExternalMethods.startLogin((user) => {
+                        ExternalMethods.registerFirebaseUser(new User(user))
+                        this._callListCards(user.sessionToken)
                     })
                 } else {
                     this._callListCards(resultUserLogged.sessionToken)

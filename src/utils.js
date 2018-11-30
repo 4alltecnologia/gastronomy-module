@@ -1,7 +1,7 @@
 import { Dimensions, Platform, Linking, Alert, NetInfo } from "react-native"
 import DeviceInfo from "react-native-device-info"
-import Geolocation from "react-native-geolocation-service"
 import RNANAndroidSettingsLibrary from "react-native-android-settings-library"
+import Permissions from "react-native-permissions"
 import { createStore, applyMiddleware } from "redux"
 import createSagaMiddleware from "redux-saga"
 import rootReducer from "./redux/reducers/index"
@@ -10,13 +10,16 @@ import CacheStore from "./api/base/Cache"
 import axios from "axios"
 import Numeral from "numeral"
 import Moment from "moment"
+import mask from "vanilla-masker"
 import "moment/locale/pt-br"
 import "numeral/locales/pt-br"
-import { UNITY_SHIFTS_COMPONENT_STRINGS as UnityShiftsStrings, LOCATION_SETTINGS_STRINGS, GENERAL_STRINGS, ORDER_STATUS_COMPONENT_STRINGS as OrderStrings, ORDER_TYPE_STRINGS as OrderTypeStrings, CART_CONTAINER_STRINGS as CartStrings } from "./languages"
-import { BASE_URL_IMAGE, LANGUAGE } from "./configs"
+import { UNITY_SHIFTS_COMPONENT_STRINGS as UnityShiftsStrings, GENERAL_STRINGS, ORDER_STATUS_COMPONENT_STRINGS as OrderStrings, ORDER_TYPE_STRINGS as OrderTypeStrings, CART_CONTAINER_STRINGS as CartStrings } from "./languages"
+import { LANGUAGE, CACHE_LOCATION_GASTRONOMY } from "./configs"
+import { BASE_URL_IMAGE } from "./api/APIConfiguration"
 import Images from "./assets/index"
 import { FontColor } from "./theme/Theme"
 import * as Errors from "./errors"
+import { saveHeaders } from "./database/specialization/StorageGeneral"
 
 var ErrorGeneric = {
     InternetConnection: 1,
@@ -30,6 +33,22 @@ const PriceType = {
     BIGGEST_PRICE: 3
 }
 
+const AddressType = {
+    STREET_NEIGHBORHOOD_CITY: 0,
+    STREET_NUMBER: 1,
+    NEIGHBORHOOD_CITY_PROVINCE: 2,
+    NUMBER_COMPLEMENT: 3,
+    QUERY: 4,
+    QUERY_NO_NEIGHBORHOOD: 5,
+}
+
+const UserAddressType = {
+    GPS: "gps",
+    HOME: "home",
+    WORK: "work",
+    CUSTOM: "custom"
+}
+
 const MediaTypes = {
     THUMB: "thumb",
     LOGO: "logo"
@@ -38,30 +57,36 @@ const MediaTypes = {
 const AnimationTypes = {
     BOUNCE: "bounce",
     PULSE: "pulse",
-    FADE_IN: "fadeIn"
+    FADE_IN: "fadeIn",
+    FADE_IN_DOWN: "fadeInDown",
 }
 
 const DeliveryDistance = "20000" //Distance in meters (20000 = 20KM))
 
-const paymentMethod = {
+const PAYMENT_METHOD = {
     CREDITCARD: {
         id: 1,
+        key: "creditCard",
         name: "creditCard"
     },
     DEBIT: {
         id: 2,
+        key: "debit",
         name: "Débito"
     },
     MONEY: {
         id: 3,
+        key: "money",
         name: "Dinheiro"
     },
     FOODTICKET: {
         id: 4,
+        key: "foodTicket",
         name: "Vale Refeição"
     },
     WALLET: {
         id: 5,
+        key: "wallet",
         name: "wallet",
         cardIdName: "CHECKING_ACCOUNT"
     }
@@ -121,6 +146,176 @@ const UsedIndoorDeliveryOrderStatus = [
     OrderStatus.DELIVERED,
     OrderStatus.CANCELLED
 ]
+
+const FirebaseActions = {
+    ORDER_TYPE: {
+        screen: "gm_order_type",
+        actions: {
+            SELECT_TYPE: "gm_order_type_select_type"
+        }
+    },
+    HEADER: {
+        screen: "gm_header",
+        actions: {
+            ORDER_HISTORY: "gm_header_order_history",
+            CART: "gm_header_cart",
+            CHECKLIST: "gm_header_checklist",
+        }
+    },
+    UNITY_LIST: {
+        screen: "gm_unity_list",
+        actions: {
+            CHANGE_ADDRESS: "gm_unity_list_change_address",
+            UNTIY_DETAIL: "gm_unity_list_unity_detail"
+        }
+    },
+    ADDRESS_LIST: {
+        screen: "gm_address_list",
+        actions: {
+            NEW_ADDRESS: "gm_address_list_new_address",
+            SELECT_ADDRESS: "gm_address_list_select_address",
+            DELETE_ADDRESS: "gm_address_list_delete_address"
+        }
+    },
+    ADDRESS_SEARCH: {
+        screen: "gm_address_search",
+        actions: {
+            SELECTED: "gm_address_search_selected"
+        }
+    },
+    ADDRESS_DETAIL: {
+        screen: "gm_address_detail",
+        actions: {
+            SAVE: "gm_address_detail_save"
+        }
+    },
+    ORDER_HISTORY: {
+        screen: "gm_order_history",
+        actions: {
+            EXPANDED: "gm_order_history_expanded"
+        }
+    },
+    UNITY_DETAIL: {
+        screen: "gm_unity_detail",
+        actions: {
+            SHOW_INFO: "gm_unity_detail_show_info",
+            OFFERS_CATALOG: "gm_unity_detail_offers_catalog",
+            OFFERS_TAB: "gm_unity_detail_offers_tab",
+            CATALOG_TAB: "gm_unity_detail_catalog_tab",
+            OFFER_PRODUCT: "gm_unity_detail_offer_product",
+            CATALOG_PRODUCT: "gm_unity_detail_catalog_product",
+            FLOAT_BUTTON: "gm_unity_detail_float_button",
+            FLOAT_BUTTON_CATEGORY: "gm_unity_detail_float_button_category",
+            INFO_PHONE: "gm_unity_detail_info_phone",
+            INFO_SITE: "gm_unity_detail_info_site",
+            CHECK_PRODUCT_ADD: "gm_unity_detail_check_product_add",
+            CHECK_PRODUCT_REMOVE: "gm_unity_detail_check_product_remove",
+            CHECK_BAR_LOGIN: "gm_unity_detail_check_bar_login",
+            CHECK_BAR_TABLE_NUMBER: "gm_unity_detail_check_bar_table_number",
+            CHECK_BAR_EXPAND: "gm_unity_detail_check_bar_expand",
+            CHECK_BAR_RETRACT: "gm_unity_detail_check_bar_retract",
+            CHECK_BAR_ORDER: "gm_unity_detail_check_bar_order",
+        }
+    },
+    PRODUCT_DETAIL: {
+        screen: "gm_product_detail",
+        actions: {
+            ADD: "gm_product_detail_add",
+            REMOVE: "gm_product_detail_remove",
+            ADD_CART: "gm_product_detail_add_cart"
+        }
+    },
+    MODIFIERS: {
+        screen: "gm_modifiers",
+        actions: {
+            SEE_MORE: "gm_modifiers_see_more",
+            SINGLE_ADD: "gm_modifiers_single_add",
+            SINGLE_REMOVE: "gm_modifiers_single_remove",
+            MULTIPLE_ADD: "gm_modifiers_multiple_add",
+            MULTIPLE_REMOVE: "gm_modifiers_multiple_remove",
+            MODIFIERS_ADDED: "gm_modifiers_modifiers_added"
+        }
+    },
+    CART: {
+        screen: "gm_cart",
+        actions: {
+            ADD: "gm_cart_plus",
+            REMOVE: "gm_cart_minus",
+            LOGIN: "gm_cart_login",
+            CHANGE_ADDRESS: "gm_cart_change_address",
+            CHOOSE_INDOOR_METHOD: "gm_cart_choose_indoor_method",
+            CHOOSE_PAYMENT: "gm_cart_choose_payment"
+        }
+    },
+    PAYMENT: {
+        screen: "gm_payment",
+        actions: {
+            CHANGED_PAYMENT_METHOD: "gm_payment_changed_payment_method",
+            PAY: "gm_payment_pay",
+            PAY_SUCCESS: "gm_payment_pay_success"
+        }
+    },
+    SUCCESS: {
+        screen: "gm_success",
+        actions: {
+            CLOSE: "gm_success_close"
+        }
+    },
+    DISCOUNTS_CLUB_HOME: {
+        screen: "gm_discounts_club_home",
+        actions: {
+            BANNER: "gm_home_discounts_club_banner",
+            LOGIN: "gm_home_discounts_club_login",
+            STATEMENT: "gm_home_discounts_club_statement",
+            CATEGORY: "gm_home_discounts_club_category",
+            FEATURED: "gm_home_discounts_club_featured",
+            CHANGE_ADDRESS: "gm_home_discounts_club_change_address",
+        }
+    },
+    DISCOUNTS_CLUB_TRADESMAN_LIST: {
+        screen: "gm_discounts_club_tradesman_list",
+        actions: {
+            TRADESMAN_TAPPED: "gm_discounts_club_tradesman_list_tapped"
+        }
+    },
+    DISCOUNTS_CLUB_TRADESMAN_DETAILS: {
+        screen: "gm_discounts_club_tradesman_details"
+    },
+    OFFERS_LIST: {
+        screen: "gm_offers_list",
+        actions: {
+            OFFER_TAPPED: "gm_offers_list_offer_tapped",
+            CATEGORY_TAPPED: "gm_offers_list_category_tapped",
+        }
+    },
+    OFFER_DETAILS: {
+        screen: "gm_offers_details",
+        actions: {
+            BUY: "gm_offers_details_buy",
+        }
+    },
+    CHECK_CART: {
+        screen: "gm_check_cart",
+        actions: {
+            PAY: "gm_check_cart_pay",
+            CATALOG: "gm_check_cart_catalog",
+        }
+    },
+    CHECK_PAYMENT: {
+        screen: "gm_check_payment",
+        actions: {
+            CHANGED_PAYMENT_METHOD: "gm_check_payment_changed_payment_method",
+            PAY: "gm_check_payment_pay",
+            PAY_SUCCESS: "gm_check_payment_pay_success"
+        }
+    },
+    CHECK_SUCCESS: {
+        screen: "gm_check_success",
+        actions: {
+            CLOSE: "gm_check_success_close"
+        }
+    }
+}
 
 function isOrderStatusBeingUsed(orderStatus, isOutdoor = true) {
     if (isOutdoor) {
@@ -310,12 +505,12 @@ function formatTime(time, pattern) {
     return Moment(time).locale(LANGUAGE.toLowerCase()).format(pattern)
 }
 
-function formatPrice(item, hasSpace = false) {
+function formatPrice(item, hasSpace = false, hasMonetarySymbol = true) {
     Numeral.locale(LANGUAGE.toLowerCase())
     if (hasSpace) {
-        return GENERAL_STRINGS.monetary + " " + Numeral(item/100).format(GENERAL_STRINGS.currencyFormat)
+        return (hasMonetarySymbol ? GENERAL_STRINGS.monetary : "") + " " + Numeral(item/100).format(GENERAL_STRINGS.currencyFormat)
     } else {
-        return GENERAL_STRINGS.monetary + Numeral(item/100).format(GENERAL_STRINGS.currencyFormat)
+        return (hasMonetarySymbol ? GENERAL_STRINGS.monetary : "") + Numeral(item/100).format(GENERAL_STRINGS.currencyFormat)
     }
 }
 
@@ -323,9 +518,58 @@ function formatDistance(distance) {
     return distance >= 1000 ? (distance/1000).toFixed(1) + "km" : distance.toFixed(0) + "m"
 }
 
+function formatCpf(cpf) {
+    if (!!cpf){
+        return mask.toPattern(cpf, "999.999.999-99")
+    } else {
+        return null
+    }
+}
 
 function getStatusBarStyle() {
     return FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
+}
+
+
+function formatZipCode(zipCode) {
+    return mask.toPattern(zipCode, "99999-999")
+}
+
+function formatDate(dateString) {
+    if (!!dateString) {
+        var dateArray = dateString.split("-")
+
+        if (dateArray.length == 3) {
+            return dateArray[2] + "/" + dateArray[1] + "/" + dateArray[0]
+        } else {
+            return dateString
+        }
+    } else {
+        return null
+    }
+}
+
+function formatPhoneNumber(phoneNumber) {
+    if (!phoneNumber) {
+        return null
+    }
+
+    switch (phoneNumber.length) {
+        case 13:
+            return mask.toPattern(phoneNumber, "+99 (99) 99999-9999")
+        case 12:
+            return mask.toPattern(phoneNumber, "+99 (99) 9999-9999")
+        case 11:
+            return mask.toPattern(phoneNumber, "(99) 99999-9999")
+        case 10:
+            return mask.toPattern(phoneNumber, "(99) 9999-9999")
+        case 9:
+            return mask.toPattern(phoneNumber, "99999-9999")
+        case 8:
+            return mask.toPattern(phoneNumber, "9999-9999")
+        default:
+            return null
+    }
 }
 
 const DaysOfWeek = {
@@ -402,7 +646,7 @@ function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
         Math.sin(dLat/2) * Math.sin(dLat/2) +
         Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
         Math.sin(dLon/2) * Math.sin(dLon/2)
-    
+
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
     var d = R * c // Distance in km
     return d.toFixed(2)
@@ -414,20 +658,32 @@ function deg2rad(deg) {
 
 function getCurrentLocation(parametersIndex = 0) {
     return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-            (position => {
-                return resolve(position)
-            }),
-            (error => {
-                if (parametersIndex === 3) {
-                    return reject(new Errors.LocationException())
-                } else if (error.code !== LocationError.TIMEOUT) {
-                    return reject(new Errors.LocationSettingsException())
+        CacheStore.get(CACHE_LOCATION_GASTRONOMY).then(value => {
+            return resolve(value)
+        }).catch(error => {
+            Permissions.request("location", {type: "whenInUse"}).then(response => {
+                if (response === "authorized") {
+                    navigator.geolocation.getCurrentPosition(
+                        (position => {
+                            CacheStore.set(CACHE_LOCATION_GASTRONOMY, position, 2)
+                            saveHeaders(position.coords.latitude, position.coords.longitude)
+                            return resolve(position)
+                        }),
+                        (error => {
+                            if (parametersIndex === 3) {
+                                return reject(new Errors.LocationException())
+                            } else if (error.code !== LocationError.TIMEOUT) {
+                                return reject(new Errors.LocationSettingsException())
+                            } else {
+                                return resolve(getCurrentLocation(parametersIndex + 1))
+                            }
+                        }), LOCATION_SETTINGS[parametersIndex]
+                    )
                 } else {
-                    resolve(getCurrentLocation(parametersIndex + 1))
+                    return reject(new Errors.LocationSettingsException())
                 }
-            }), LOCATION_SETTINGS[parametersIndex]
-        )
+            })
+        })
     })
 }
 
@@ -447,32 +703,59 @@ function callNativeLocationSettings(){
     }
 }
 
-function callPhoneNumber(phoneNumber){
-    let phoneNumberToCall = ""
-    if (Platform.OS === "ios"){
-        phoneNumberToCall = "telprompt:" + phoneNumber
-    } else {
-        phoneNumberToCall = "tel:" + phoneNumber
-    }
-    Linking.canOpenURL(phoneNumberToCall).then(supported => {
+function openExternalLink(value, app, shouldTryURL = false) {
+    let url = (!!app.urlApp ? app.urlApp : app.url) + value
+
+    Linking.canOpenURL(url).then(supported => {
         if (supported) {
-            Linking.openURL(phoneNumberToCall);
+            Linking.openURL(url)
+        } else {
+            if (shouldTryURL) {
+                let url = app.url + value
+
+                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                    url = "http://" + url
+                }
+
+                Linking.canOpenURL(url).then(supported => {
+                    if (supported) {
+                        Linking.openURL(url)
+                    }
+                })
+            }
         }
     })
 }
 
-function openWebsite(website){
-    var websiteToOpen = website
-
-    if (!website.startsWith("http://") && !website.startsWith("https://")) {
-        websiteToOpen = "http://" + website
+const ExternalLink = {
+    TELEPHONE: {
+        url: Platform.OS === "ios" ? "telprompt:" : "tel:"
+    },
+    EMAIL: {
+        url: "mailto:"
+    },
+    WEBSITE: {
+        url: ""
+    },
+    FACEBOOK: {
+        url: "https://www.facebook.com/",
+        urlApp: Platform.OS === "ios" ? ""/*fb://profile/"*/ : "fb://facewebmodal/f?href=https://www.facebook.com/" //TODO: - NOT WORKING ON IOS
+    },
+    INSTAGRAM: {
+        url: "https://www.instagram.com/",
+        urlApp: "instagram://user?username="
+    },
+    WHATSAPP: {
+        url: "https://api.whatsapp.com/send?phone="
+    },
+    TWITTER: {
+        url: "https://www.twitter.com/",
+        urlApp: "twitter://user?screen_name="
+    },
+    MAPS: {
+        url: "",
+        urlApp: Platform.OS === "ios" ? "maps://app?daddr=" : "google.navigation:q="
     }
-
-    Linking.canOpenURL(websiteToOpen).then(supported => {
-        if (supported) {
-            Linking.openURL(websiteToOpen);
-        }
-    })
 }
 
 function getUserAgent(apiHeader, latitude, longitude, callback: (newApiHeader) => void) {
@@ -555,23 +838,28 @@ module.exports = {
     ErrorGeneric,
     DeliveryDistance,
     AnimationTypes,
-    paymentMethod,
+    PAYMENT_METHOD,
     getOrderTypeName,
     UsedDaysOfWeek,
     formatPrice,
     formatTime,
     formatDeliveryTime,
     formatDistance,
+    formatCpf,
+    formatDate,
+    formatPhoneNumber,
     getStatusBarStyle,
+    formatZipCode,
     getUnityMedia,
     screenWidthPercentage,
     screenHeightPercentage,
     getDistanceFromLatLonInKm,
     getCurrentLocation,
     callNativeLocationSettings,
-    callPhoneNumber,
-    openWebsite,
+    openExternalLink,
+    ExternalLink,
     PriceType,
+    AddressType,
     MediaTypes,
     getUserAgent,
     isDeviceConnected,
@@ -589,5 +877,7 @@ module.exports = {
     NavigationLeftButton,
     NavigationRightButton,
     getNavigationHeaderHeight,
-    configureStore
+    configureStore,
+    FirebaseActions,
+    UserAddressType
 }

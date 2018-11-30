@@ -1,8 +1,9 @@
 import React, { PureComponent } from "react"
 import { View, Alert, StyleSheet } from "react-native"
+import { NavigationActions } from "react-navigation"
 import Spinner from "../../libs/customSpinner"
 import { addCheck, getCheck, removeCheck } from "../../database/specialization/StorageCheck"
-import { createCheckOrder, getOrderDetails } from "../../api/ApiRequests"
+import { createCheckOrder, getOrderDetails } from "../../api/APIRequests"
 import { isDeviceConnected, OrderStatus } from "../../utils"
 import { ExternalMethods } from "../../native/Functions"
 import { GENERAL_STRINGS } from "../../languages/index"
@@ -49,7 +50,7 @@ class CheckInitialController extends PureComponent {
                         createCheckOrder(this.state.unityId, this.state.checkNumber).then(order => {
                             addCheck(this.state.checkNumber, this.state.checkName, this.state.unityId, order.id, (error, newCheck) => {
                                 this._setCheckOnRedux(newCheck.checkNumber, newCheck.checkName, newCheck.unityId, newCheck.orderId, newCheck.tableNumber)
-                                this._chooseNavigation(order.orderItems)
+                                this._navigate(order.orderItems)
                             })
                         }).catch(error => {
                             this._showAlert(!!error.data && !!error.data.message ? error.data.message : GENERAL_STRINGS.alertErrorMessage)
@@ -62,7 +63,7 @@ class CheckInitialController extends PureComponent {
                                 })
                             } else {
                                 this._setCheckOnRedux(checkStorage.checkNumber, checkStorage.checkName, checkStorage.unityId, checkStorage.orderId, checkStorage.tableNumber)
-                                this._chooseNavigation(orderDetails.orderItems)
+                                this._navigate(orderDetails.orderItems)
                             }
                         }).catch(error => {
                             this._showAlert(!!error.data && !!error.data.message ? error.data.message : GENERAL_STRINGS.alertErrorMessage)
@@ -79,12 +80,21 @@ class CheckInitialController extends PureComponent {
         })
     }
 
-    _chooseNavigation(orderItems) {
-        let nextScreen = orderItems.length > 0 ? "CheckProductListContainer" : "NewUnityDetailContainer"
-
+    _navigate(orderItems) {
         this.setState({
             isLoading: false
-        }, () => this.props.navigateTo(nextScreen))
+        }, () => {
+            const navigationAction = NavigationActions.reset({
+                index: 0,
+                actions: [
+                    NavigationActions.navigate({
+                        routeName: orderItems.length > 0 ? "CheckProductListContainer" : "NewUnityDetailContainer"
+                    })
+                ]
+            })
+
+            this.props.navigation.dispatch(navigationAction)
+        })
     }
 
     _setCheckOnRedux(checkNumber, checkName, unityId, orderId, tableNumber) {

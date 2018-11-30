@@ -48,9 +48,9 @@ export default class SelectAddressComponent extends PureComponent {
         },
         buttonSelectAddress: {
             fontFamily: FontFamily.font,
-            fontWeight: FontWeight.light,
+            fontWeight: FontWeight.semibold,
             fontSize: 16,
-            color: FontColor.primary,
+            color: "white",
             textAlign: "center"
         }
     })

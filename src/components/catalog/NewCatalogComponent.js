@@ -4,6 +4,8 @@ import { TabNavigator, TabBarTop } from "react-navigation"
 import { TAB_CONTAINER_STRINGS } from "../../languages/index"
 import { FontFamily, FontWeight, BackgroundColor } from "../../theme/Theme"
 import NewCatalogListComponent from "./NewCatalogListComponent"
+import { ExternalMethods } from "../../native/Functions"
+import { FirebaseActions } from "../../utils"
 
 export default class NewCatalogComponent extends Component {
 
@@ -87,6 +89,8 @@ export default class NewCatalogComponent extends Component {
             scrollEnabled: false,
             navigationOptions: ({ navigation }) => ({
                 tabBarOnPress: (scene, jumpToIndex) => {
+                    ExternalMethods.registerFirebaseEvent(scene.scene.index === 0 ? FirebaseActions.UNITY_DETAIL.actions.OFFERS_TAB : FirebaseActions.UNITY_DETAIL.actions.CATALOG_TAB, {})
+
                     scene.jumpToIndex(scene.scene.index)
                     this.props.onShouldShowFloatButton(scene.scene.index == 1)
                 },

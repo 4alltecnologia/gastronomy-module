@@ -115,9 +115,9 @@ export default class CheckSuccessComponent extends PureComponent {
         },
         buttonFinish: {
             fontFamily: FontFamily.font,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.semibold,
             fontSize: 16,
-            color: "white"
+            color: "white",
         }
     })
 

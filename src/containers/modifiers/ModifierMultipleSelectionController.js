@@ -1,6 +1,6 @@
 import React, { PureComponent } from "react"
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, FlatList, Alert, StatusBar, ScollView } from "react-native"
-import { screenWidthPercentage, screenHeightPercentage, PriceType } from "../../utils"
+import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Image, FlatList, Alert, ScollView } from "react-native"
+import { screenWidthPercentage, screenHeightPercentage, PriceType, FirebaseActions } from "../../utils"
 import { FontWeight, BackgroundColor, FontColor } from "../../theme/Theme"
 import { GENERAL_STRINGS } from "../../languages/index"
 import Numeral from "numeral"
@@ -11,6 +11,7 @@ import { addProductModifier, removeProductModifier } from "../../database/specia
 import ProductDescriptionComponent from "./components/ProductDescriptionComponent"
 import ModifierFooterComponent from "./components/ModifierFooterComponent"
 import MultipleSelectionProductsListComponent from "./components/multipleSelection/MultipleSelectionProductsListComponent"
+import { ExternalMethods } from "../../native/Functions"
 
 export default class ModifierMultipleSelectionController extends PureComponent {
 
@@ -47,6 +48,7 @@ export default class ModifierMultipleSelectionController extends PureComponent {
     }
 
     _onNextPressed() {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.MODIFIERS_ADDED, {})
         addProductModifier(this.state.modifier, this.state.listSelectedOptions, (error, product) => {
             if (!error) {
                 this.props.onNextPressed({
@@ -76,6 +78,8 @@ export default class ModifierMultipleSelectionController extends PureComponent {
                     value += modifier.originalPrice / listProducts.length
                 })
             }
+
+            ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.MULTIPLE_ADD, { id: optionSelected.id, name: optionSelected.name, quantity: this.state.listSelectedOptions.length })
 
             this.setState({
                 quantitySelected: this.state.listSelectedOptions.length,
@@ -111,6 +115,8 @@ export default class ModifierMultipleSelectionController extends PureComponent {
                 })
             }
 
+            ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.MULTIPLE_REMOVE, { id: optionSelected.id, name: optionSelected.name, quantity: newListProducts.length })
+
             this.setState({
                 listSelectedOptions: newListProducts,
                 quantitySelected: newListProducts.length,
@@ -119,13 +125,11 @@ export default class ModifierMultipleSelectionController extends PureComponent {
         }
     }
 
-    render(){
+    render() {
         let enableNext = this.state.quantitySelected >= this.state.modifier.min
-        let barStyle = FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
 
         return(
             <View style = { this.stylesView.content } accessibilityLabel = "viewMain">
-                <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
                 <MultipleSelectionProductsListComponent modifier = { this.state.modifier }
                                                         product = { this.props.product }
                                                         listOptions = { this.state.listOptions }

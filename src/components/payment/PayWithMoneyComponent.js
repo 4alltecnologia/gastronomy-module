@@ -3,7 +3,7 @@ import { Animated, Image, ImageBackground, View, Text, TouchableOpacity, TextInp
 import { FontFamily, FontColor, FontWeight, BackgroundColor } from "../../theme/Theme"
 import { PAY_WITH_MONEY_COMPONENT_STRINGS as PaymentStrings, GENERAL_STRINGS } from "../../languages/index"
 import Images from "../../assets/index"
-import { paymentMethod } from "../../utils"
+import { PAYMENT_METHOD } from "../../utils"
 import Numeral from "numeral"
 import { LANGUAGE } from "../../configs"
 import VMasker from "vanilla-masker"
@@ -149,7 +149,7 @@ export default class PayWithMoneyComponent extends Component {
     constructor(props) {
         super(props)
 
-        let value = this.props.selectedPaymentMethod.name == paymentMethod.MONEY.name ? true : false
+        let value = this.props.selectedPaymentMethod.name == PAYMENT_METHOD.MONEY.name ? true : false
 
         this.state = {
             isMoney: value,
@@ -161,7 +161,7 @@ export default class PayWithMoneyComponent extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let value = nextProps.selectedPaymentMethod.name == paymentMethod.MONEY.name ? true : false
+        let value = nextProps.selectedPaymentMethod.name == PAYMENT_METHOD.MONEY.name ? true : false
 
         this.setState({
             isMoney: value
@@ -169,7 +169,7 @@ export default class PayWithMoneyComponent extends Component {
     }
 
     _onIsMoney(value) {
-        this.props.onPayOnDeliveryTapped(paymentMethod.MONEY)
+        this.props.onPayOnDeliveryTapped(PAYMENT_METHOD.MONEY)
     }
 
     _onNeedChange(value) {

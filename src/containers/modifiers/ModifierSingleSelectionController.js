@@ -1,10 +1,12 @@
 import React, { PureComponent } from "react"
-import { View, StyleSheet, Alert, StatusBar } from "react-native"
+import { View, StyleSheet, Alert } from "react-native"
 import { FontColor } from "../../theme/Theme"
 import ModifierFooterComponent from "./components/ModifierFooterComponent"
 import SingleSelectionProductsListComponent from "./components/singleSelection/SingleSelectionProductsListComponent"
 import { addProductModifier, removeProductModifier } from "../../database/specialization/StorageProduct"
 import { GENERAL_STRINGS } from "../../languages/index"
+import { ExternalMethods } from "../../native/Functions"
+import { FirebaseActions } from "../../utils"
 
 export default class ModifierSingleSelectionController extends PureComponent {
 
@@ -39,41 +41,41 @@ export default class ModifierSingleSelectionController extends PureComponent {
     }
 
     _onSelectOption(option) {
+        let selectedOption = !!this.state.selectedOption && this.state.selectedOption.id === option.id ? null : option
+
+        if (!!selectedOption) {
+            ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.SINGLE_ADD, { id: selectedOption.id, name: selectedOption.name })
+        } else {
+            ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.SINGLE_REMOVE, { id: option.id, name: option.name })
+        }
+
         this.setState({
-            selectedOption: option,
-            totalValue: this.state.productValue + option.originalPrice
+            selectedOption: selectedOption,
+            totalValue: !!selectedOption ? this.state.productValue + option.originalPrice : this.state.productValue
         })
     }
 
     _onNextPressed() {
-        if (!!this.state.selectedOption) {
-            addProductModifier(this.state.modifier, [this.state.selectedOption], (error, product) => {
-                if (!error) {
-                    this.props.onNextPressed({
-                        listOptions: this.state.selectedOption ? [this.state.selectedOption] : [],
-                        modifier: this.state.modifier,
-                        product: product
-                    })
-                } else {
-                    Alert.alert(GENERAL_STRINGS.alertErrorTitle , GENERAL_STRINGS.alertErrorMessage)
-                }
-            })
-        } else {
-            this.props.onNextPressed({
-                listOptions: this.state.selectedOption ? [this.state.selectedOption] : [],
-                modifier: this.state.modifier,
-                product: null
-            })
-        }
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.MODIFIERS.actions.MODIFIERS_ADDED, {})
+
+        addProductModifier(this.state.modifier, !!this.state.selectedOption ? [this.state.selectedOption] : [], (error, product) => {
+            if (!error) {
+                this.props.onNextPressed({
+                    listOptions: !!this.state.selectedOption ? [this.state.selectedOption] : [],
+                    modifier: this.state.modifier,
+                    product: product
+                })
+            } else {
+                Alert.alert(GENERAL_STRINGS.alertErrorTitle, GENERAL_STRINGS.alertErrorMessage)
+            }
+        })
     }
 
     render() {
         let enableNext = this.state.modifier.min > 0 ? this.state.selectedOption != null : true
-        let barStyle = FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
 
         return(
             <View style = { this.stylesView.content } accessibilityLabel="viewMain">
-                <StatusBar barStyle = { barStyle } accessibilityLabel="statusBar"/>
                 <SingleSelectionProductsListComponent product = { this.props.product }
                                                       selectedOption = { this.state.selectedOption }
                                                       listOptions = { this.state.listOptions }

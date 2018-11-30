@@ -10,8 +10,11 @@ export const SET_TABLE_NUMBER = "SET_TABLE_NUMBER"
 export const SET_CHECK_UNITY = "SET_CHECK_UNITY"
 // export const SET_SHOULD_CLOSE_MODULE = "SET_SHOULD_CLOSE_MODULE"
 export const SET_IS_CHECK_MODE = "SET_IS_CHECK_MODE"
+export const SET_IS_DISCOUNTS_CLUB_MODE = "SET_IS_DISCOUNTS_CLUB_MODE"
 export const SET_IS_OFFERS_MODE = "SET_IS_OFFERS_MODE"
 export const SET_IS_ORDER_TYPE_SELECTION_MODE = "SET_IS_ORDER_TYPE_SELECTION_MODE"
+export const SET_CURRENT_ADDRESS = "SET_CURRENT_ADDRESS"
+export const SET_CURRENT_OPEN_ORDERS = "SET_CURRENT_OPEN_ORDERS"
 
 export const setUnityId = (unityId) => {
     return {
@@ -98,10 +101,10 @@ export const setIsCheckMode = (isCheckMode) => {
     }
 }
 
-export const setIsOffersMode = (isOffersMode) => {
+export const setIsDiscountsClubMode = (isDiscountsClubMode) => {
     return {
-        type: SET_IS_OFFERS_MODE,
-        isOffersMode
+        type: SET_IS_DISCOUNTS_CLUB_MODE,
+        isDiscountsClubMode
     }
 }
 
@@ -109,6 +112,20 @@ export const setIsOrderTypeSelectionMode = (isOrderTypeSelectionMode) => {
     return {
         type: SET_IS_ORDER_TYPE_SELECTION_MODE,
         isOrderTypeSelectionMode
+    }
+}
+
+export const setCurrentAddress = (currentAddress) => {
+    return {
+        type: SET_CURRENT_ADDRESS,
+        currentAddress
+    }
+}
+
+export const setCurrentOpenOrders = (currentOpenOrders) => {
+    return {
+        type: SET_CURRENT_OPEN_ORDERS,
+        currentOpenOrders
     }
 }
 

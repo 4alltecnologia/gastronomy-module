@@ -41,8 +41,8 @@ export default class NoLocationFoundWarning extends PureComponent {
         },
         buttonTitle: {
             fontFamily: FontFamily.font,
-            fontWeight: FontWeight.light,
-            fontSize: 18,
+            fontWeight: FontWeight.semibold,
+            fontSize: 16,
             color: "white",
             backgroundColor: "transparent",
             textAlign: "center"
@@ -93,13 +93,19 @@ export default class NoLocationFoundWarning extends PureComponent {
                     <Text style = { this.stylesText.message } accessibilityLabel = "textMessage">
                         { WarningStrings.secondMessage }
                     </Text>
-                    <TouchableOpacity style = { this.stylesButton.refreshOffers } onPress = { () => this.props.tryLocation() } accessibilityLabel = "viewButtonTryLocation">
-                        <LinearGradient colors = { [BackgroundColor.primary, BackgroundColor.gradient] } style = { this.stylesButton.buttonRefreshOffersGradient }>
-                            <Text style = { this.stylesText.buttonTitle } accessibilityLabel = "textButtonTryLocation">
-                                { WarningStrings.tryAgain }
-                            </Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                    { !!this.props.tryLocation ?
+                        <TouchableOpacity style={this.stylesButton.refreshOffers}
+                                          onPress={() => this.props.tryLocation()}
+                                          accessibilityLabel="viewButtonTryLocation">
+                            <LinearGradient colors={[BackgroundColor.primary, BackgroundColor.gradient]}
+                                            style={this.stylesButton.buttonRefreshOffersGradient}>
+                                <Text style={this.stylesText.buttonTitle} accessibilityLabel="textButtonTryLocation">
+                                    {WarningStrings.tryAgain}
+                                </Text>
+                            </LinearGradient>
+                        </TouchableOpacity>
+                        : null
+                    }
                 </View>
             </View>
         )

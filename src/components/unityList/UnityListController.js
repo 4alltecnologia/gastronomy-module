@@ -1,20 +1,17 @@
 import React, { Component } from "react"
 import { Platform, StyleSheet, Text, View, Image, SectionList, TouchableWithoutFeedback, RefreshControl, Alert, AppState } from "react-native"
 import { CachedImage } from "react-native-cached-image"
-import AddressService from "../address/AddressService"
-import { FontFamily, FontWeight, FontColor } from "../../theme/Theme"
-import { getUnitiesNearby } from "../../api/ApiRequests"
-import { getCurrentLocation, callNativeLocationSettings, isDeviceConnected } from "../../utils"
-import { LOCATION_SETTINGS_STRINGS, GENERAL_STRINGS } from "../../languages/index"
 import * as Errors from "../../errors"
 import UnityListComponent from "./UnityListComponent"
 import NoUnitiesWarning from "../../components/messages/NoUnitiesWarning"
-import NoLocationWarning from "../../components/messages/NoLocationWarning"
-import NoLocationFoundWarning from "../../components/messages/NoLocationFoundWarning"
 import NoInternetWarning from "../../components/messages/NoInternetWarning"
 import { connect } from "react-redux"
-import { setUnityId } from "../../redux/actions"
+import { setUnityId, setCurrentAddress } from "../../redux/actions"
 import UnityService from "../../api/services/UnityService"
+import { ExternalMethods } from "../../native/Functions"
+import { FirebaseActions } from "../../utils"
+import CurrentAddressController from "../currentAddress/CurrentAddressController"
+import AddressListModal from "../addressList/AddressListModal"
 
 class UnityListController extends Component {
 
@@ -28,21 +25,36 @@ class UnityListController extends Component {
         super(props)
         
         this.state = {
-            address: null,
             openUnities: [],
             closedUnities: [],
             isRefreshing: true,
+            showModalAddress: false,
             error: null,
             appState: AppState.currentState
         }
 
         this.onRefresh = this._onRefresh.bind(this)
         this.onSelectUnity = this._onSelectUnity.bind(this)
-        this.tryAgain = this._tryAgain.bind(this)
+        this.changeAddress = this._changeAddress.bind(this)
+        this.closeModalAddress = this._closeModalAddress.bind(this)
+    }
+
+    componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.UNITY_LIST.screen)
+
+        this.props.navigation.addListener("willFocus", payload => {
+            ExternalMethods.registerFirebaseScreen(FirebaseActions.UNITY_LIST.screen)
+        })
     }
 
     componentWillMount() {
         this._callUnityListAndAddress()
+    }
+
+    componentWillReceiveProps(nextProps){
+        if (!(!!nextProps.currentAddress && !!this.props.currentAddress && nextProps.currentAddress.id === this.props.currentAddress.id)){
+            this._onRefresh()
+        }
     }
 
     _handleAppStateChange = (nextAppState) => {
@@ -56,45 +68,11 @@ class UnityListController extends Component {
     }
 
     _callUnityListAndAddress() {
-        getCurrentLocation().then(position => {
-            this._getUnities(position)
-            this._retrieveAddress(position)
-        }).catch(error => {
-            if (error instanceof Errors.LocationSettingsException) {
-                this.setState({
-                    isRefreshing: false,
-                    error: error,
-                    openUnities: [],
-                    closedUnities: [],
-                }, () => {
-                    setTimeout(() => {
-                        Alert.alert(
-                            LOCATION_SETTINGS_STRINGS.attention,
-                            LOCATION_SETTINGS_STRINGS.needActivateGps,
-                            [{text: GENERAL_STRINGS.no, style: "cancel"},
-                                {
-                                    text: GENERAL_STRINGS.yes, onPress: () => {
-                                    callNativeLocationSettings()
-                                    AppState.addEventListener("change", this._handleAppStateChange)
-                                }
-                                }],
-                            {cancelable: false}
-                        )
-                    }, 50)
-                })
-            } else {
-                this.setState({
-                    isRefreshing: false,
-                    error: error,
-                    openUnities: [],
-                    closedUnities: [],
-                })
-            }
-        })
+        this._getUnities()
     }
 
-    _getUnities(position) {
-        UnityService.getUnitiesNearby(position).then(unities => {
+    _getUnities() {
+        UnityService.getUnitiesNearby(this.props.currentAddress).then(unities => {
             this.setState({
                 openUnities: unities.openUnities,
                 closedUnities: unities.closedUnities,
@@ -111,54 +89,53 @@ class UnityListController extends Component {
         })
     }
 
-    _retrieveAddress(position) {
-        AddressService.getUserAddress(position.coords.latitude, position.coords.longitude).then(address => {
-            this.setState({
-                address: address
-            })
-        }).catch(error => { })
-    }
-
     _onSelectUnity(unity) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_LIST.actions.UNTIY_DETAIL, { id: unity.id, name: unity.name })
         this.props.setUnityId(unity.id)
         this.props.navigation.navigate("NewUnityDetailContainer", { distanceKm: unity.distance })
     }
 
-    _tryAgain() {
+    _changeAddress() {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_LIST.actions.CHANGE_ADDRESS, {})
+
         this.setState({
-            openUnities: [],
-            closedUnities: [],
-            isRefreshing: false,
-            error: null
-        }, () => setTimeout(() => {
-            this._callUnityListAndAddress()
-        }, 150))
+            showModalAddress: true
+        })
+    }
+
+    _closeModalAddress() {
+        this.setState({
+            showModalAddress: false
+        })
     }
 
     _onRefresh() {
         this.setState({
             openUnities: [],
             closedUnities: [],
-            isRefreshing: true
-        }, () => this._callUnityListAndAddress() )
+            isRefreshing: true,
+            error: null
+        }, () => {
+            this._callUnityListAndAddress()
+        })
     }
 
     _renderError() {
-        if (this.state.error instanceof Errors.LocationException) {
+        if (this.state.error instanceof Errors.ConnectionException) {
             return (
-                <NoLocationFoundWarning tryLocation = { this.tryAgain }/>
-            )
-        } else if (this.state.error instanceof Errors.LocationSettingsException) {
-            return (
-                <NoLocationWarning tryLocation = { this.tryAgain }/>
-            )
-        } else if (this.state.error instanceof Errors.ConnectionException) {
-            return (
-                <NoInternetWarning tryInternet = { this.tryAgain }/>
+                <NoInternetWarning tryInternet = { this.onRefresh }/>
             )
         } else if (this.state.error instanceof Errors.NoUnitiesException) {
             return (
-                <NoUnitiesWarning tryAgain = { this.tryAgain }/>
+                <View style = { this.stylesView.general }>
+                    <CurrentAddressController navigation = { this.props.navigation }
+                                              changeAddress = { this.changeAddress }/>
+                    <NoUnitiesWarning tryAgain = { this.onRefresh }/>
+                    <AddressListModal navigation = { this.props.navigation }
+                                      defaultAddressSelected = { this.closeModalAddress }
+                                      showModalAddress = { this.state.showModalAddress }
+                                      cameFromCart = { false }/>
+                </View>
             )
         } else {
             return (
@@ -175,13 +152,19 @@ class UnityListController extends Component {
         } else {
             return (
                 <View style = { this.stylesView.general }>
-                    <UnityListComponent address = { this.state.address }
+                    <CurrentAddressController navigation = { this.props.navigation }
+                                              changeAddress = { this.changeAddress }/>
+                    <UnityListComponent address = { this.props.currentAddress }
                                         isRefreshing = { this.state.isRefreshing }
                                         openUnities = { this.state.openUnities }
                                         closedUnities = { this.state.closedUnities }
                                         onRefresh = { this.onRefresh }
                                         onSelectUnity = { this.onSelectUnity }
                     />
+                    <AddressListModal navigation = { this.props.navigation }
+                                      defaultAddressSelected = { this.closeModalAddress }
+                                      showModalAddress = { this.state.showModalAddress }
+                                      cameFromCart = { false }/>
                 </View>
             )
         }
@@ -189,6 +172,8 @@ class UnityListController extends Component {
 }
 
 export default connect(
-    state => ({ }),
-    { setUnityId }
+    state => ({
+        currentAddress: state.general.currentAddress
+    }),
+    { setUnityId, setCurrentAddress }
 ) ( UnityListController )

@@ -1,10 +1,10 @@
-import React, { Component } from "react"
-import { Animated, View, ScrollView, Text, StyleSheet, Alert, StatusBar, Modal } from "react-native"
-import { FontColor, BackgroundColor } from "../../theme/Theme"
-import { getUnityMedia, MediaTypes, getDistanceFromLatLonInKm, IdOrderType } from "../../utils"
+import React, { PureComponent } from "react"
+import { Animated, View, ScrollView, Text, StyleSheet, Alert, Modal, LayoutAnimation, UIManager, Platform } from "react-native"
+import { BackgroundColor } from "../../theme/Theme"
+import { getUnityMedia, MediaTypes, getDistanceFromLatLonInKm, IdOrderType, FirebaseActions } from "../../utils"
 import UnityHeaderComponent from "./UnityHeaderComponent"
 import NewCatalogComponent from "../catalog/NewCatalogComponent"
-import UnityInfoContainer from "../../containers/UnityInfoContainer"
+import UnityInfoController from "../unityInfo/UnityInfoController"
 import NoInternetWarning from "../../components/messages/NoInternetWarning"
 import Spinner from "../../libs/customSpinner"
 import FloatButton from "../floatButton/FloatButton"
@@ -15,8 +15,8 @@ import { getOrderType } from "../../database/specialization/StorageGeneral"
 import { saveProduct } from "../../database/specialization/StorageProduct"
 import { parseSubItems } from "../../database/specialization/StorageCart"
 import { getModifiersSelected, updateModifiersSelected, resetModifiersSelected } from "../../database/specialization/StorageModifiers"
-import { getUnityCatalog, addItemsCheck } from "../../api/ApiRequests"
-import { BASE_URL_IMAGE } from "../../configs"
+import { getUnityCatalog, addItemsCheck } from "../../api/APIRequests"
+import { BASE_URL_IMAGE } from "../../api/APIConfiguration"
 import { ExternalMethods } from "../../native/Functions"
 import { connect } from "react-redux"
 import { totalCart, setCurrentCartCheck, updateItemCurrentCartCheck } from "../../redux/actions"
@@ -24,8 +24,9 @@ import ModalTableNumberController from "../check/modalTableNumber/ModalTableNumb
 import ModalSuccessAlertController from "../check/modalSuccessAlert/ModalSuccessAlertController"
 import UnityService from "../../api/services/UnityService"
 import * as Errors from "../../errors"
+import User from "../../models/User"
 
-class UnityDetailsController extends Component {
+class UnityDetailsController extends PureComponent {
 
     stylesView = StyleSheet.create({
         general: {
@@ -78,6 +79,10 @@ class UnityDetailsController extends Component {
     constructor(props) {
         super(props)
 
+        if (Platform.OS === "android") {
+            UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true)
+        }
+
         this.state = {
             unity: null,
             isLoading: true,
@@ -113,6 +118,12 @@ class UnityDetailsController extends Component {
     }
 
     componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.UNITY_DETAIL.screen)
+
+        this.props.navigation.addListener("willFocus", payload => {
+            ExternalMethods.registerFirebaseScreen(FirebaseActions.UNITY_DETAIL.screen)
+        })
+
         ExternalMethods.hasUserLogged((isLogged) => {
             this.setState({
                 isLogged: isLogged
@@ -164,10 +175,9 @@ class UnityDetailsController extends Component {
     }
 
     _onShowInformation() {
-        this.setState({
-            showMenu: !this.state.showMenu,
-            showFloatButton: this.state.listOffers.length == 0 ? true : false
-        })
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.SHOW_INFO, {})
+
+        this.props.navigation.navigate("UnityInfoContainer", { unity: this.state.unity })
     }
 
     _onShouldShowFloatButton(value) {
@@ -177,6 +187,8 @@ class UnityDetailsController extends Component {
     }
 
     _onTapFloatButton() {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.FLOAT_BUTTON, {})
+
         this.setState({
             isShowingModal: true
         })
@@ -189,6 +201,7 @@ class UnityDetailsController extends Component {
     }
 
     _onSelectCategory(item, index) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.FLOAT_BUTTON_CATEGORY, { categoryName: item.name })
         var scrollPosition = 0
         scrollPosition += this.state.showUnityHeaderWithInfo ? 208 : 148 //UnityHeader height
         scrollPosition += this.state.listOffers.length > 0 ? 64 : 0 //TabHeader height
@@ -208,6 +221,7 @@ class UnityDetailsController extends Component {
 
     _onSelectProduct(product) {
         if (!this.props.isCheckMode || (product.productVariations && product.productVariations.length > 0)) {
+            ExternalMethods.registerFirebaseEvent(this.state.showFloatButton ? FirebaseActions.UNITY_DETAIL.actions.CATALOG_PRODUCT : FirebaseActions.UNITY_DETAIL.actions.OFFER_PRODUCT, {})
             if ((this.state.isOrderTypeOutdoor && !this.state.unity.outdoorOpened) || (!this.state.isOrderTypeOutdoor && !this.state.unity.indoorOpened)) {
                 Alert.alert(
                     GENERAL_STRINGS.warning,
@@ -259,9 +273,11 @@ class UnityDetailsController extends Component {
 
     _actionCheckButton(hasTableNumber) {
         if (!this.state.isLogged) {
-            ExternalMethods.startLogin((loginSuccess) => {
+            ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.CHECK_BAR_LOGIN, {})
+            ExternalMethods.startLogin((user) => {
+                ExternalMethods.registerFirebaseUser(new User(user))
                 this.setState({
-                    isLogged: loginSuccess
+                    isLogged: !!user
                 })
             })
         } else if (this.props.currentCartItemCount == 0) {
@@ -280,9 +296,10 @@ class UnityDetailsController extends Component {
         } else if (hasTableNumber) {
             ExternalMethods.getUserLogged((error, resultUserLogged) => {
                 if (!!error) {
-                    ExternalMethods.startLogin((loginSuccess) => {
+                    ExternalMethods.startLogin((user) => {
+                        ExternalMethods.registerFirebaseUser(new User(user))
                         this.setState({
-                            isLogged: loginSuccess
+                            isLogged: !!user
                         }, () => this._actionCheckButton(false))
                     })
                 } else {
@@ -304,6 +321,7 @@ class UnityDetailsController extends Component {
                     })
 
                     addItemsCheck(this.props.orderId, this.props.tableNumber, orderItems, resultUserLogged.sessionToken).then(response => {
+                        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.CHECK_BAR_ORDER, { orderId: this.props.orderId, tableNumber: this.props.tableNumber, orderItems: orderItems })
                         this.props.totalCart(this.props.currentCartItemCount + this.props.quantityCart)
                         this.props.setCurrentCartCheck([])
 
@@ -373,11 +391,13 @@ class UnityDetailsController extends Component {
     }
 
     _addProduct(item) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.CHECK_PRODUCT_ADD, {})
         item.quantity = (item.quantity) ? (item.quantity < 99 ? item.quantity + 1 : 99) : 1
         this.props.updateItemCurrentCartCheck(item, true)
     }
 
     _removeProduct(item) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.UNITY_DETAIL.actions.CHECK_PRODUCT_REMOVE, {})
         item.quantity--
         this.props.updateItemCurrentCartCheck(item, true)
     }
@@ -397,25 +417,23 @@ class UnityDetailsController extends Component {
     render() {
         if (this.state.isLoading) {
             return (
-                <Spinner visible = { true } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                <Spinner visible = { true } size = { 115 }/>
             )
         } else if (!!this.state.error) {
             return (
                 this._renderError()
             )
         } else {
-            let barStyle = FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
             return (
                 <View style = { this.stylesView.general }>
                     <View style = { this.stylesView.mainContainer }>
-                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
-                        <OptionsModal accessibilityLabel="dropdownMenu"
-                                      itemListStyle={this.stylesText.itemList}
-                                      options={this.state.listCategory}
-                                      animationType="none"
-                                      onSelect={this.onSelectCategory}
-                                      onShow={this.onShowModal}
-                                      isShowingOptions={this.state.isShowingModal}
+                        <OptionsModal accessibilityLabel = "dropdownMenu"
+                                      itemListStyle = { this.stylesText.itemList }
+                                      options = { this.state.listCategory }
+                                      animationType = "fade"
+                                      onSelect = { this.onSelectCategory }
+                                      onShow = { this.onShowModal }
+                                      isShowingOptions = { this.state.isShowingModal }
                         />
                         { this.state.showMenu && this.state.showFloatButton ?
                             <FloatButton topPosition = { this.state.showUnityHeaderWithInfo ? 208 : 154 }
@@ -439,7 +457,7 @@ class UnityDetailsController extends Component {
                                                      addProduct = { this.addProduct }
                                                      removeProduct = { this.removeProduct }
                                 />
-                                : <UnityInfoContainer detailsUnity = { this.state.unity }/>
+                                : <UnityInfoController unity = { this.state.unity }/>
                             }
                         </ScrollView>
                     </View>

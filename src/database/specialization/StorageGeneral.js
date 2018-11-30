@@ -46,7 +46,6 @@ export function getGoogleApiKey(callback: (error, key) => void) {
 }
 
 /**
- *
  * @param orderType: Array
  */
 export function saveOrderType(orderType, callback: (error, orderTypeStorage) => void) {
@@ -56,7 +55,6 @@ export function saveOrderType(orderType, callback: (error, orderTypeStorage) => 
 }
 
 /**
- *
  * @param callback: (error, orderType: Array)
  */
 export function getOrderType(callback: (error, orderTypeStorage) => void) {

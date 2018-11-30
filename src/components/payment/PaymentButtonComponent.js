@@ -23,10 +23,10 @@ export default class PaymentButtonComponent extends Component {
     stylesText = StyleSheet.create({
         placeOrder: {
             fontFamily: FontFamily.font,
+            fontWeight: FontWeight.semibold,
             fontSize: 16,
-            fontWeight: FontWeight.medium,
-            textAlign: "center",
             color: "white",
+            textAlign: "center",
             backgroundColor: "transparent"
         }
     })

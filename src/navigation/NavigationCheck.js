@@ -3,12 +3,13 @@ import { StackNavigator, NavigationActions } from "react-navigation"
 import { CHECK_PAYMENT_CONTAINER_STRINGS, CHECK_SUCCESS_CONTAINER_STRINGS, GENERAL_STRINGS } from "../languages"
 import ProductDetailContainer from "../containers/ProductDetailContainer"
 import NewUnityDetailContainer from "../containers/NewUnityDetailContainer"
+import UnityInfoContainer from "../containers/UnityInfoContainer"
 import ModifierContainer from "../containers/ModifierContainer"
 import CheckInitialContainer from "../containers/CheckInitialContainer"
 import CheckProductListContainer from "../containers/CheckProductListContainer"
 import CheckPaymentContainer from "../containers/CheckPaymentContainer"
 import CheckSuccessContainer from "../containers/CheckSuccessContainer"
-import NavigationHeader from "./NavigationHeader"
+import NavigationHeader from "./header/NavigationHeader"
 import { NavigationBackground, NavigationLeftButton, NavigationRightButton, NavigationTitleView } from "../utils"
 
 const navigateOnce = (getStateForAction) => (action, state) => {
@@ -22,7 +23,7 @@ const navigateOnce = (getStateForAction) => (action, state) => {
 export const CheckStack = ({ initialRouteName, screenProps }) => {
     const CheckNavigator = StackNavigator({
         CheckInitialContainer: {
-            screen: ({ navigation }) => <CheckInitialContainer navigation = { navigation }/>,
+            screen: CheckInitialContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -35,7 +36,7 @@ export const CheckStack = ({ initialRouteName, screenProps }) => {
             })
         },
         NewUnityDetailContainer: {
-            screen: ({ navigation }) => <NewUnityDetailContainer navigation = { navigation }/>,
+            screen: NewUnityDetailContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -48,8 +49,22 @@ export const CheckStack = ({ initialRouteName, screenProps }) => {
                 )
             })
         },
+        UnityInfoContainer: {
+            screen: UnityInfoContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      rightButton = { NavigationRightButton.NONE }
+                                      customTitle = { !!navigation.state.params.unity.name ? navigation.state.params.unity.name : "" } //PRODUCT NAME
+                                      shouldCloseModule = { screenProps.shouldCloseModule && screenProps.shouldUnityCloseModule }
+                    />
+                )
+            })
+        },
         CheckProductListContainer: {
-            screen: ({ navigation }) => <CheckProductListContainer navigation = { navigation }/>,
+            screen: CheckProductListContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -62,7 +77,7 @@ export const CheckStack = ({ initialRouteName, screenProps }) => {
             })
         },
         CheckPaymentContainer: {
-            screen: ({ navigation }) => <CheckPaymentContainer navigation = { navigation }/>,
+            screen: CheckPaymentContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -74,7 +89,7 @@ export const CheckStack = ({ initialRouteName, screenProps }) => {
             })
         },
         CheckSuccessContainer: {
-            screen: ({ navigation }) => <CheckSuccessContainer navigation = { navigation }/>,
+            screen: CheckSuccessContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -111,7 +126,7 @@ export const CheckStack = ({ initialRouteName, screenProps }) => {
             })
         },
         ProductDetailContainer: {
-            screen: ({ navigation }) => <ProductDetailContainer navigation = { navigation }/>,
+            screen: ProductDetailContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }

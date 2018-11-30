@@ -177,7 +177,7 @@ export default class CarouselItemCellComponent extends PureComponent {
                                                 { this.props.carouselItem.offerItem.product.orderType.name }
                                             </Text>
                                         </View>
-                                        <Image style = { this.stylesImage.unityDistancePin } source = { Images.icons.pin }  accessibilityLabel = "imageUnityDistancePin"/>
+                                        <Image style = { this.stylesImage.unityDistancePin } source = { Images.icons.pinLocation }  accessibilityLabel = "imageUnityDistancePin"/>
                                         <Text style = { this.stylesText.unityDistance }  accessibilityLabel = "textUnityDistance">
                                             { formatDistance(this.state.carouselItem.offerItem.unity.distance) }
                                         </Text>

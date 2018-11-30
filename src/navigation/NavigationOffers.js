@@ -3,25 +3,29 @@ import { StackNavigator, NavigationActions } from "react-navigation"
 import { NavigationBackground, NavigationLeftButton, NavigationRightButton, NavigationTitleView } from "../utils"
 import {
     ADDRESS_LIST_CONTAINER_STRINGS,
-    ADDRESS_SEARCH_CONTAINER_STRINGS,
-    ADDRESS_DETAILS_CONTAINER_STRINGS,
+    DISCOUNTS_CLUB_CONTAINER_STRINGS,
     PAYMENT_CONTAINER_STRINGS,
     ORDER_HISTORY_CONTAINER_STRINGS,
     CART_CONTAINER_STRINGS,
     OFFERS_CONTAINER_STRINGS,
-    SUCCESS_CONTAINER_STRINGS,
-    GENERAL_STRINGS
+    SUCCESS_CONTAINER_STRINGS
 } from "../languages"
-import NavigationHeader from "./NavigationHeader"
-import AddressListController from "../containers/addressList/AddressListController"
-import AddressSearchController from "../containers/addressSearch/AddressSearchController"
-import AddressDetailsController from "../containers/addressDetails/AddressDetailsController"
+import NavigationHeader from "./header/NavigationHeader"
+import AddressListContainer from "../containers/AddressListContainer"
+import AddressSearchContainer from "../containers/AddressSearchContainer"
+import AddressDetailsContainer from "../containers/AddressDetailsContainer"
+import DiscountsClubHomeContainer from "../containers/DiscountsClubHomeContainer"
+import DiscountsClubOffersGroupContainer from "../containers/DiscountsClubOffersGroupContainer"
+import DiscountsClubOfferDetailsContainer from "../containers/DiscountsClubOfferDetailsContainer"
+import DiscountsClubTradesmanListContainer from "../containers/DiscountsClubTradesmanListContainer"
+import DiscountsClubTradesmanDetailsContainer from "../containers/DiscountsClubTradesmanDetailsContainer"
 import SuccessContainer from "../containers/SuccessContainer"
 import ProductDetailContainer from "../containers/ProductDetailContainer"
 import CartContainer from "../containers/CartContainer"
 import PaymentContainer from "../containers/PaymentContainer"
 import UnityListContainer from "../containers/UnityListContainer"
 import NewUnityDetailContainer from "../containers/NewUnityDetailContainer"
+import UnityInfoContainer from "../containers/UnityInfoContainer"
 import ModifierContainer from "../containers/ModifierContainer"
 import OrderHistoryListContainer from "../containers/OrderHistoryListContainer"
 import OffersContainer from "../containers/OffersContainer"
@@ -37,7 +41,7 @@ const navigateOnce = (getStateForAction) => (action, state) => {
 export const OffersStack = ({ initialRouteName, screenProps }) => {
     const OffersStackNavigator = StackNavigator({
         OffersContainer: {
-            screen: ({ navigation }) => <OffersContainer navigation = { navigation }/>,
+            screen: OffersContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -51,7 +55,7 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
             })
         },
         NewUnityDetailContainer: {
-            screen: ({ navigation }) => <NewUnityDetailContainer navigation = { navigation }/>,
+            screen: NewUnityDetailContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -59,13 +63,27 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
                                       leftButton = { NavigationLeftButton.BACK }
                                       rightButton = { NavigationRightButton.ORDERHISTORYANDCART }
                                       customTitle = { !!navigation.state.params ? navigation.state.params.title : "" } //UNITY NAME
-                                      shouldResetStackTo = { "OffersContainer" }
+                                      shouldResetStackTo = { "DiscountsClubHomeContainer" }
                     />
                 )
             })
         },
-        AddressList: {
-            screen: ({ navigation }) => <AddressListController navigation = { navigation }/>,
+        UnityInfoContainer: {
+            screen: UnityInfoContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      rightButton = { NavigationRightButton.NONE }
+                                      customTitle = { !!navigation.state.params.unity.name ? navigation.state.params.unity.name : "" } //PRODUCT NAME
+                                      shouldCloseModule = { screenProps.shouldCloseModule && screenProps.shouldUnityCloseModule }
+                    />
+                )
+            })
+        },
+        AddressListContainer: {
+            screen: AddressListContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -76,33 +94,98 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
                 )
             })
         },
-        AddressSearch: {
-            screen: ({ navigation }) => <AddressSearchController navigation = { navigation }/>,
+        DiscountsClubHomeContainer: {
+            screen: ({ navigation }) => <DiscountsClubHomeContainer navigation = { navigation } mainContainer = { screenProps.mainContainer }/>,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
                                       titleView = { NavigationTitleView.CUSTOMTITLE }
                                       leftButton = { NavigationLeftButton.BACK }
-                                      customTitle = { ADDRESS_SEARCH_CONTAINER_STRINGS.title }
-                    />
-                )
-            })
-        },
-        AddressDetails: {
-            screen: ({ navigation }) => <AddressDetailsController navigation = { navigation }/>,
-            navigationOptions: ({ navigation }) => ({
-                header: (
-                    <NavigationHeader navigation = { navigation }
-                                      titleView = { NavigationTitleView.CUSTOMTITLE }
-                                      leftButton = { NavigationLeftButton.BACK }
-                                      customTitle = { ADDRESS_DETAILS_CONTAINER_STRINGS.title }
+                                      rightButton = { NavigationRightButton.ORDERHISTORYANDCART }
+                                      customTitle = { DISCOUNTS_CLUB_CONTAINER_STRINGS.title }
                                       hideMainBackButton = { true }
                     />
                 )
             })
         },
+        DiscountsClubOffersGroupContainer: {
+            screen: DiscountsClubOffersGroupContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      rightButton = { NavigationRightButton.ORDERHISTORYANDCART }
+                                      customTitle = { DISCOUNTS_CLUB_CONTAINER_STRINGS.title }
+                    />
+                )
+            })
+        },
+        DiscountsClubOfferDetailsContainer: {
+            screen: DiscountsClubOfferDetailsContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      navigationBackground = { NavigationBackground.TRANSPARENT }
+                                      customTitle = { !!navigation.state.params.title ? navigation.state.params.title : "" } //OFFER NAME
+                    />
+                )
+            })
+        },
+        DiscountsClubTradesmanListContainer: {
+            screen: DiscountsClubTradesmanListContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      rightButton = { NavigationRightButton.ORDERHISTORYANDCART }
+                                      customTitle = { DISCOUNTS_CLUB_CONTAINER_STRINGS.title }
+                    />
+                )
+            })
+        },
+        DiscountsClubTradesmanDetailsContainer: {
+            screen: DiscountsClubTradesmanDetailsContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      rightButton = { NavigationRightButton.NONE }
+                                      customTitle = { DISCOUNTS_CLUB_CONTAINER_STRINGS.title }
+                    />
+                )
+            })
+        },
+        AddressSearchContainer: {
+            screen: AddressSearchContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      customTitle = { ADDRESS_LIST_CONTAINER_STRINGS.title }
+                    />
+                )
+            })
+        },
+        AddressDetailsContainer: {
+            screen: AddressDetailsContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      customTitle = { ADDRESS_LIST_CONTAINER_STRINGS.title }
+                    />
+                )
+            })
+        },
         SuccessContainer: {
-            screen: ({ navigation }) => <SuccessContainer navigation = { navigation } mainContainer = { "OffersContainer" }/>,
+            screen: ({ navigation }) => <SuccessContainer navigation = { navigation } mainContainer = { "DiscountsClubHomeContainer" }/>,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -115,7 +198,7 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
             })
         },
         PaymentContainer: {
-            screen: ({ navigation }) => <PaymentContainer navigation = { navigation }/>,
+            screen: PaymentContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -127,20 +210,20 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
             })
         },
         ProductDetailContainer: {
-            screen: ({ navigation }) => <ProductDetailContainer navigation = { navigation }/>,
+            screen: ProductDetailContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
                                       titleView = { NavigationTitleView.CUSTOMTITLE }
                                       leftButton = { NavigationLeftButton.BACK }
-                                      customTitle = { !!navigation.state.params.product.name ? navigation.state.params.product.name : "" } //PRODUCT NAME
+                                      customTitle = { !!navigation.state.params.product && !!navigation.state.params.product.name ? navigation.state.params.product.name : "" } //PRODUCT NAME
                                       navigationBackground = { !!navigation.state.params.product.image ? NavigationBackground.TRANSPARENT : navigation.state.params.navigationBackground } //NAVIGATION HEADER BACKGROUND
                     />
                 )
             })
         },
         CartContainer: {
-            screen: ({ navigation }) => <CartContainer navigation = {navigation}/>,
+            screen: CartContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -152,7 +235,7 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
             })
         },
         OrderHistoryListContainer: {
-            screen: ({ navigation }) => <OrderHistoryListContainer navigation = { navigation }/>,
+            screen: OrderHistoryListContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -164,7 +247,7 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
             })
         },
         ModifierContainerEven:{
-            screen: ({ navigation }) => <ModifierContainer navigation = { navigation }/>,
+            screen: ModifierContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -176,7 +259,7 @@ export const OffersStack = ({ initialRouteName, screenProps }) => {
             })
         },
         ModifierContainerOdd:{
-            screen: ({ navigation }) => <ModifierContainer navigation = { navigation }/>,
+            screen: ModifierContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }

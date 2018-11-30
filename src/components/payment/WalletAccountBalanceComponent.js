@@ -4,7 +4,7 @@ import { BackgroundColor, FontFamily, FontWeight } from "../../theme/Theme"
 import { WALLET_ACCOUNT_BALANCE_COMPONENT_STRINGS as WalletStrings, GENERAL_STRINGS } from "../../languages/index"
 import Images from "../../assets/index"
 import Numeral from "numeral"
-import { paymentMethod } from "../../utils"
+import { PAYMENT_METHOD } from "../../utils"
 import { LANGUAGE } from "../../configs"
 
 export default class WalletAccountBalanceComponent extends Component {
@@ -102,7 +102,7 @@ export default class WalletAccountBalanceComponent extends Component {
         super(props)
 
         this.state = {
-            isSelected: props.selectedPaymentMethod.name == paymentMethod.WALLET.name ? true : false
+            isSelected: props.selectedPaymentMethod.name == PAYMENT_METHOD.WALLET.name ? true : false
         }
 
         Numeral.locale(LANGUAGE.toLowerCase())
@@ -110,7 +110,7 @@ export default class WalletAccountBalanceComponent extends Component {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            isSelected: nextProps.selectedPaymentMethod.name == paymentMethod.WALLET.name ? true : false
+            isSelected: nextProps.selectedPaymentMethod.name == PAYMENT_METHOD.WALLET.name ? true : false
         })
     }
 
@@ -120,7 +120,7 @@ export default class WalletAccountBalanceComponent extends Component {
 
     render() {
         return (
-            <TouchableOpacity style = { this.stylesButton.general } onPress = { () => this.onChangePaymentMethod(paymentMethod.WALLET) } accessibilityLabel = "viewGeneral" >
+            <TouchableOpacity style = { this.stylesButton.general } onPress = { () => this.onChangePaymentMethod(PAYMENT_METHOD.WALLET) } accessibilityLabel = "viewGeneral" >
                 <Image style = { this.stylesImage.icon }
                        source = { this.props.icon }
                        accessibilityLabel = "imageIcon"

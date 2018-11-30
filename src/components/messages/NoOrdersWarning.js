@@ -41,8 +41,8 @@ export default class NoOrdersWarning extends PureComponent {
         },
         buttonTitle: {
             fontFamily: FontFamily.font,
-            fontWeight: FontWeight.light,
-            fontSize: 18,
+            fontWeight: FontWeight.semibold,
+            fontSize: 16,
             color: "white",
             backgroundColor: "transparent",
             textAlign: "center"
@@ -88,16 +88,16 @@ export default class NoOrdersWarning extends PureComponent {
                 <View style = { this.stylesView.content } accessibilityLabel = "viewContent">
                     <Image style = { this.stylesImage.icon } source = { Images.icons.noOrders } accessibilityLabel = "imageIcon" />
                     <Text style = { this.stylesText.title } accessibilityLabel = "textTitle">
-                        { this.props.isOffersMode ? NO_ORDERS_OFFERS_WARNING_STRINGS.firstMessage : NO_ORDERS_WARNING_STRINGS.firstMessage }
+                        { this.props.isDiscountsClubMode ? NO_ORDERS_OFFERS_WARNING_STRINGS.firstMessage : NO_ORDERS_WARNING_STRINGS.firstMessage }
                     </Text>
                     <Text style = { this.stylesText.message } accessibilityLabel = "textMessage">
-                        { this.props.isOffersMode ? NO_ORDERS_OFFERS_WARNING_STRINGS.secondMessage : NO_ORDERS_WARNING_STRINGS.secondMessage }
+                        { this.props.isDiscountsClubMode ? NO_ORDERS_OFFERS_WARNING_STRINGS.secondMessage : NO_ORDERS_WARNING_STRINGS.secondMessage }
                     </Text>
                     {this.props.hideButtonNoOrders ? null :
                         <TouchableOpacity style = { this.stylesButton.refreshOffers } onPress = { () => this.props.updateNoOrders() } accessibilityLabel = "viewButtonUpdateNoOrders">
                             <LinearGradient colors = { [BackgroundColor.primary, BackgroundColor.gradient] } style = { this.stylesButton.buttonRefreshOffersGradient }>
                                 <Text style = { this.stylesText.buttonTitle } accessibilityLabel="textButtonUpdateNoOrders">
-                                    { this.props.isOffersMode ? NO_ORDERS_OFFERS_WARNING_STRINGS.button : NO_ORDERS_WARNING_STRINGS.button }
+                                    { this.props.isDiscountsClubMode ? NO_ORDERS_OFFERS_WARNING_STRINGS.button : NO_ORDERS_WARNING_STRINGS.button }
                                 </Text>
                             </LinearGradient>
                         </TouchableOpacity>

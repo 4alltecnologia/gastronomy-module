@@ -1,25 +1,25 @@
 import { isDeviceConnected, IdOrderType } from "../../utils"
-import { getUnitiesNearby, getUnityDetails, getUnityCatalog } from "../ApiRequests"
+import { getUnitiesNearby, getUnityDetails, getUnityCatalog } from "../APIRequests"
 import { getOrderType } from "../../database/specialization/StorageGeneral"
 import * as Errors from "../../errors"
-import ShortUnity from "../../models/ShortUnity"
-import Unity from "../../models/Unity"
+import ShortUnity from "../../models/unityList/ShortUnity"
+import Unity from "../../models/unityDetails/Unity"
 import Catalog from "../../models/Catalog"
 
 export default class UnityService {
     /**
-     * @param position: Position object containing user latitude and longitude
+     * @param position: Address object containing user latitude and longitude
      * @returns {Promise<any>}
      * resolve: Object containing one array with open Unities and one array contaning the closed UNities based on the order type(service)
      * reject: One of (CustomException, ConnectionException or NoUnitiesException)
      */
-    static getUnitiesNearby(position) {
+    static getUnitiesNearby(address) {
         return new Promise((resolve, reject) => {
             isDeviceConnected(isConnected => {
                 if (!isConnected) {
                     return reject(new Errors.ConnectionException())
                 }
-                getUnitiesNearby(position.coords.latitude, position.coords.longitude).then(data => {
+                getUnitiesNearby(address.latitude, address.longitude, address.zip).then(data => {
                     let unityList = data.map(unity => {
                         return new ShortUnity(unity)
                     })

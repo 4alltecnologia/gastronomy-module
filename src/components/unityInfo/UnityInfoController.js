@@ -1,48 +1,33 @@
-import React, { Component } from "react"
-import { Image, View, ScrollView, Text, StyleSheet, Linking } from "react-native"
-import { FontFamily, FontColor } from "../../theme/Theme"
-import UnityContactComponent from "./UnityContactComponent"
-import UnityInformationComponent from "./UnityInformationComponent"
-import UnityLocationComponent from "./UnityLocationComponent"
-import UnityListShiftsComponent from "./UnityListShiftsComponent"
-import { callPhoneNumber, openWebsite } from "../../utils"
+import React, { PureComponent } from "react"
+import { connect } from "react-redux"
+import * as Errors from "../../errors"
+import UnityService from "../../api/services/UnityService"
+import UnityInfoComponent from "./UnityInfoComponent"
 
-export default class UnityInfoController extends Component {
+class UnityInfoController extends PureComponent {
 
     constructor(props) {
         super(props)
 
+        //TODO: - We need a better way to add the categories
+        let unity = this.props.navigation.getParam("unity")
+        unity.categories = ["Descrição", "Endereço", "Horários de Atendimento", "Entre em Contato", "Pagamentos"]
+
         this.state = {
-            unity: this.props.detailsUnity
+            unity: unity
         }
-
-        this.onPressOpenWebsite = this._onPressOpenWebsite.bind(this)
-        this.onPressCallUnity = this._onPressCallUnity.bind(this)
-    }
-
-    _onPressOpenWebsite(website) {
-        openWebsite(website)
-    }
-
-    _onPressCallUnity(phoneNumber) {
-        callPhoneNumber(phoneNumber)
     }
 
     render() {
         return (
-            <ScrollView accessibilityLabel = "scrollViewUnityInfo" scrollEnabled = { false }>
-                <UnityInformationComponent description = { this.state.unity.desc } />
-                <UnityListShiftsComponent hourGroups = { this.state.unity.unityOperatingHourGroups }/>
-                <UnityLocationComponent address = { this.state.unity.address }
-                                        latitude = { this.state.unity.latitude }
-                                        longitude = { this.state.unity.longitude }
-                />
-                <UnityContactComponent telephone = { this.state.unity.phoneNumber }
-                                       website = { this.state.unity.siteUrl }
-                                       onPressOpenWebsite = { this.onPressOpenWebsite}
-                                       onPressCallUnity = { this.onPressCallUnity }
-                />
-            </ScrollView>
+            <UnityInfoComponent unity = { this.state.unity }/>
         )
     }
 }
+
+export default connect(
+    state => ({
+        unityId: state.general.unityId
+    }),
+    { }
+) ( UnityInfoController )

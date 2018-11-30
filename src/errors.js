@@ -1,13 +1,28 @@
 import { GENERAL_STRINGS, LOCATION_SETTINGS_STRINGS, ERROR_STRINGS } from "./languages/index"
 
-export function CustomException(title = GENERAL_STRINGS.alertErrorTitle, message = GENERAL_STRINGS.alertErrorMessage) {
-    this.title = title
-    this.message = message
+export function AddProductDifferentOrderTypeException() {
+    this.title = GENERAL_STRINGS.alertErrorTitle
+    this.message = ERROR_STRINGS.ADD_PRODUCT_EXCEPTION.differentOrderType
+}
+
+export function AddProductDifferentUnityException() {
+    this.title = GENERAL_STRINGS.alertErrorTitle
+    this.message = ERROR_STRINGS.ADD_PRODUCT_EXCEPTION.differentUnity
 }
 
 export function ConnectionException() {
     this.title = GENERAL_STRINGS.alertErrorTitle
     this.message = ERROR_STRINGS.CONNECTION_EXCEPTION.noConnection
+}
+
+export function CustomException(title = GENERAL_STRINGS.alertErrorTitle, message = GENERAL_STRINGS.alertErrorMessage) {
+    this.title = title
+    this.message = message
+}
+
+export function DiscountsClubHomeException() {
+    this.title = "asdadas"
+    this.message = "adasdas"
 }
 
 export function LocationException() {
@@ -24,12 +39,8 @@ export function NoOffersException() { }
 
 export function NoUnitiesException() { }
 
-export function AddProductDifferentOrderTypeException() {
-    this.title = GENERAL_STRINGS.alertErrorTitle
-    this.message = ERROR_STRINGS.ADD_PRODUCT_EXCEPTION.differentOrderType
-}
+export function NoAddressesException() { }
 
-export function AddProductDifferentUnityException() {
-    this.title = GENERAL_STRINGS.alertErrorTitle
-    this.message = ERROR_STRINGS.ADD_PRODUCT_EXCEPTION.differentUnity
-}
+export function NoOrdersException() {}
+
+export function LoginException() { }

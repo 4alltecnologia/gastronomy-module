@@ -18,50 +18,50 @@ export default class SingleSelectionProductsListComponent extends PureComponent 
             flex: 1
         },
         viewItem: {
-            backgroundColor:"white"
+            backgroundColor: "white"
         },
         viewRadioButton: {
-            height:14,
-            width:14,
-            borderRadius:7,
+            height: 20,
+            width: 20,
+            borderRadius: 10,
+            borderColor: "gray",
+            borderWidth: 1,
+            justifyContent: "center",
+            alignItems: "center"
+        },
+        viewRadioButtonSelected: {
+            height: 20,
+            width: 20,
+            borderRadius: 10,
             backgroundColor: BackgroundColor.primary
         },
         separator: {
-            backgroundColor:"#d1d1d1",
+            backgroundColor: "#d1d1d1",
             height: 0.5
         },
         viewMain: {
-            flexDirection:"row"
+            flexDirection: "row"
         },
         viewItemName: {
-            flex:0.7,
-            justifyContent:"center",
-            alignItems:"flex-start",
+            flex: 0.7,
+            justifyContent: "center",
+            alignItems: "flex-start",
             marginTop: 10
         },
         viewItemPriceInfo: {
-            flex:0.35,
-            flexDirection:"row",
+            flex: 0.35,
+            flexDirection: "row",
             justifyContent:"flex-end",
-            alignItems:"center",
-            marginRight:15,
+            alignItems: "center",
+            marginRight: 15,
             marginTop: 10
         },
         viewMainRenderRadioButton: {
-            width:50,
+            width: 50,
             marginBottom: 5,
             marginTop: 15,
-            justifyContent:"center",
-            alignItems:"center"
-        },
-        viewRenderRadioButton: {
-            height:20,
-            width:20,
-            borderRadius:10,
-            borderColor:"gray",
-            borderWidth:1,
-            justifyContent:"center",
-            alignItems:"center"
+            justifyContent: "center",
+            alignItems: "center"
         },
         viewDesc: {
             marginLeft: 50,
@@ -104,16 +104,7 @@ export default class SingleSelectionProductsListComponent extends PureComponent 
         super(props)
 
         this.state = {
-            selectedOption: null,
             listOptions: props.listOptions.sort((prodLeft, prodRight) => { return prodLeft.sortOrder < prodRight.sortOrder ? -1 : 1 })
-        }
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.state.selectedOption == null || nextProps.selectedOption.id != this.state.selectedOption.id) {
-            this.setState({
-                selectedOption: nextProps.selectedOption
-            })
         }
     }
     
@@ -140,11 +131,10 @@ export default class SingleSelectionProductsListComponent extends PureComponent 
                 <View style = { this.stylesView.separator } accessibilityLabel="viewDummy"/>
                 <View style = { this.stylesView.viewMain } accessibilityLabel="viewMain">
                     <View style = { this.stylesView.viewMainRenderRadioButton } accessibilityLabel="viewMainRenderRadioButton">
-                        <View style = { this.stylesView.viewRenderRadioButton } accessibilityLabel="viewRenderRadioButton">
-                            { !!this.state.selectedOption && this.state.selectedOption.id == item.id ?
-                                <View style = { this.stylesView.viewRadioButton } accessibilityLabel = "viewRadioButton"/>
-                            : null }
-                        </View>
+                        { !!this.props.selectedOption && this.props.selectedOption.id === item.id ?
+                            <View style = { this.stylesView.viewRadioButtonSelected } accessibilityLabel = "viewRadioButtonSelected"/> :
+                            <View style = { this.stylesView.viewRadioButton } accessibilityLabel="viewRadioButton"/>
+                        }
                     </View>
                     <View style = { this.stylesView.viewItemName } accessibilityLabel = "viewItemName">
                         <Text numberOfLines = { 2 } accessibilityLabel = "textName">
@@ -161,7 +151,7 @@ export default class SingleSelectionProductsListComponent extends PureComponent 
                 </View>
                 <View style = { this.stylesView.viewDesc } accessibilityLabel = "viewDesc">
                     { !!item.desc ?
-                    <Text style = { this.stylesText.textDesc }numberOfLines = { 3 } accessibilityLabel = "textDesc">
+                    <Text style = { this.stylesText.textDesc } numberOfLines = { 3 } accessibilityLabel = "textDesc">
                         { item.desc }
                     </Text>
                     : null }

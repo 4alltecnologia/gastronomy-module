@@ -15,12 +15,14 @@ const GENERAL_STRINGS = {
     emptyCheck: "No item was selected",
     unityClosed: "The store is currently closed",
     openOrder: "You have an open order",
-    next: "NEXT",
+    next: "Next",
     noOrders: "You haven't ordered anything yet",
     minutes: "minutes",
     min: "min",
     hours: "hours",
-    days: "days"
+    days: "days",
+    youAreAt: "You are at:",
+    buy: "Buy"
 }
 
 const NO_DATA_WARNING = {
@@ -31,31 +33,31 @@ const NO_DATA_WARNING = {
 const NO_ADDRESSES_WARNING = {
     firstMessage: "We can't find any registered addresses...",
     secondMessage: "Add your addresses and make your deliveries easier.",
-    newAddress: "ADD NEW ADDRESS"
+    newAddress: "Add New Address"
 }
 
 const NO_INTERNET_WARNING = {
     firstMessage: "We can't get you online…",
     secondMessage: "There's a problem trying to connect to the internet. Please try again later.",
-    tryAgain: "Try again"
+    tryAgain: "Try Again"
 }
 
 const NO_LOCATION_WARNING = {
     firstMessage:"Before we continue, we need to know where you are...",
     secondMessage:"Please activate your gps se we can detect your location",
-    tryAgain: "Try again"
+    tryAgain: "Try Again"
 }
 
 const NO_LOCATION_FOUND_WARNING = {
     firstMessage:"Oops! We couldn't detect your current location",
-    secondMessage:"Please try again later",
-    tryAgain: "Try again"
+    secondMessage:"Select an address to access all the App's features",
+    tryAgain: "Select Address"
 }
 
 const NO_UNITIES_WARNING = {
     title: "Oops, it looks like that there are no stores nearby",
     message: "We are working to take stores near you",
-    buttonTitle: "Try again"
+    buttonTitle: "Try Again"
 }
 
 const NO_RESULTS_WARNING = {
@@ -72,19 +74,19 @@ const NO_SESSION_WARNING = {
 const NO_ORDERS_WARNING = {
     firstMessage: "You don't have any active orders.",
     secondMessage: "Go to our stores section and check out the avaliable options.",
-    button: "Open store list!"
+    button: "Open Store List"
 }
 
 const NO_ORDERS_OFFERS_WARNING = {
     firstMessage: "You don't have any active orders.",
     secondMessage: "Go to our offers section and check out the avaliable options.",
-    button: "Open offers list!"
+    button: "Open Offers List"
 }
 
 const NO_OFFERS_WARNING = {
     title: "Oops, it looks like that there are no offers nearby",
     message: "We are working to take offers near you",
-    buttonTitle: "Try again"
+    buttonTitle: "Try Again"
 }
 
 const NO_ADDRESS_FOUND_WARNING = {
@@ -97,7 +99,7 @@ const NO_ADDRESS_FOUND_WARNING = {
 const NO_PRODUCTS_WARNING = {
     firstMessage: "Nothing here",
     secondMessage: "Your check is empty. To add items, go to the menu and order them.",
-    buttonMessage: "Show menu"
+    buttonMessage: "Show Menu"
 }
 
 const NATIVE_FUNCTIONS_WARNING = {
@@ -127,8 +129,8 @@ const CHECK_PRODUCT_LIST_COMPONENT = {
     tips: "Service charge (10%)",
     total: "Total",
     topMessage: "The values are from the single price from each product",
-    addProducts: "ADD MORE PRODUCTS",
-    payCheck: "PAY CHECK"
+    addProducts: "Add More Products",
+    payCheck: "Pay Check"
 }
 
 //CHECK PAYMENT CONTAINER
@@ -139,7 +141,7 @@ const CHECK_PAYMENT_CONTAINER = {
 const CHECK_PAYMENT_COMPONENT = {
     totalToPay: "Total to pay:",
     selectPaymentMethod: "Select a payment method:",
-    payNow: "PAY NOW"
+    payNow: "Pay Now"
 }
 
 //CHECK SUCCESS CONTAINER
@@ -148,10 +150,59 @@ const CHECK_SUCCESS_CONTAINER = {
 }
 
 const CHECK_SUCCESS_COMPONENT = {
-    firstMessage: "THANKS!",
-    secondMessage: "PAYMENT DONE",
-    finish: "CLOSE",
+    firstMessage: "Thanks!",
+    secondMessage: "Payment done",
+    finish: "Close",
     paidValue: "Paid value:"
+}
+
+//DISCOUNTS CLUB CONTAINER
+const DISCOUNTS_CLUB_CONTAINER = {
+    title: "Discounts Club",
+    featuredComponent: {
+        title: "Featured"
+    },
+    loggedInComponent: {
+        title: "Hello, ",
+        message: "Enjoy the Offers Club exclusive offers",
+        // message: "At anytime access your account and check your discounts coupons",
+        buttonMessage: "Show my coupons"
+    },
+    loggedOffComponent: {
+        title: "Welcome!",
+        message: "Sign in or sign up to access special offers",
+        buttonMessage: "Sign in"
+    },
+    statementLoggedInComponent: {
+        mySavings: "My savings",
+        goToStatement: "See statement"
+    },
+    statementLoggedOffComponent: {
+        title: "DISCOUNTS COUNTER",
+        message: "Enjoy exclusive offers and start saving"
+    },
+    offerDetailsComponent: {
+        offerExpiration: "Expiration date: ",
+        offerDescription: "Offer description",
+        address: "Address",
+        workingHours: "Working hours"
+    }
+}
+
+const DISCOUNTS_CLUB_OFFERS_GROUP_CONTAINER = {
+    voucher: "Voucher",
+    coupon: "Coupon"
+}
+
+const DISCOUNTS_CLUB_TRADESMAN_DETAILS_CONTAINER = {
+    about: "About",
+    access: "Access",
+    address: "Address",
+    call: "Call",
+    chatWith: "Chat",
+    contact: "Contact us",
+    enterProfile: "Access",
+    workingHours: "Working hours"
 }
 
 //UNITY LIST CONTAINER
@@ -164,10 +215,15 @@ const UNITY_LIST_CONTROLLER = {
 }
 
 //UNITY INFO CONTAINER
-const UNITY_HEADER_SECTION_COMPONENT = {
-    contact: "Contact",
-    location: "Location",
-    shifts: "Opening Hours",
+const PAYMENT_METHOD = {
+    onlinePayment: "Online payment",
+    onlinePaymentMessage: "(Credit Card / 4all Wallet)",
+    offlinePayment: "Payment on delivery",
+    offlinePaymentMessage: "(Debit / Food Ticket)"
+}
+
+const WORKING_HOURS = {
+    workingHours: "Opening Hours"
 }
 
 const UNITY_SHIFTS_COMPONENT = {
@@ -201,7 +257,7 @@ const CATALOG_CELL_COMPONENT = {
 //ORDER TYPE SELECTION CONTAINER
 const ORDER_TYPE_SELECTION_COMPONENT = {
     headerTitle: "Gastronomy",
-    selectOrderType: "Please, select how do you want to receive your order"
+    selectOrderType: "Please, select how do you want to make your order"
 }
 
 //SUCCESS CONTAINER
@@ -230,7 +286,7 @@ const SUCCESS_BOTTOM_COMPONENT = {
     subtotal: "Subtotal",
     total: "Total",
     code: "Code ",
-    finish: "CLOSE",
+    finish: "Close",
     todayFormat: "DD MMMM YYYY"
 }
 
@@ -275,7 +331,7 @@ const PAYMENT_ON_DELIVERY_COMPONENT = {
     takeaway: "Takeaway time ",
     totalValue: "Total:",
     free: "Free",
-    placeOrder: "PLACE ORDER"
+    placeOrder: "Place Order"
 }
 
 const PAY_WITH_MONEY_COMPONENT = {
@@ -323,13 +379,22 @@ const SELECT_CREDIT_CARD_COMPONENT = {
 }
 
 const ADDRESS_LIST_CONTAINER = {
-    addressPlaceholder: "Address",
-    title: "Address list",
-    attention: "Attention",
+    title: "Address",
+    listTitle: "Hello ",
+    listTitleVisitor: "Hello Visitor!",
+    listSubtitle: "Where do you want to receive your order?",
     wantToDeleteAddress: "Do you really want to delete this address?",
-    newAddress: "ADD NEW ADDRESS",
-    number: "nº",
-    zip: "ZIP"
+    newAddress: "Add New Address",
+    changeAddress: "Change Address",
+    searching: "Searching Current Location",
+    currentLocation: "Current Location",
+    disabled: "Disabled",
+    noLocation: "We can't find your location",
+    addressNotRegistered: "Address not registered",
+    activateGps: "Activate GPS",
+    register: "register",
+    home: "Home",
+    work: "Work"
 }
 
 const PRICE_SPECIFICATION = {
@@ -340,51 +405,37 @@ const PRICE_SPECIFICATION = {
 const PRODUCT_DETAIL_COMPONENT = {
     observation: "Observation",
     unitaryPrice: "Unitary price: ",
-    add: "ADD",
-    placeholderObs: "Add observation (without onions, well done, etc..)"
+    add: "Add",
+    placeholderObs: "Any observation about the product? Let us know!"
 }
 
 const ADDRESS_SEARCH_CONTAINER = {
-    title: "Inform an address",
-    byStreetAddress: "BY ADDRESS",
-    byGeolocation: "BY LOCATION",
-    byZipCode: "BY ZIP CODE"
+    titleHome: "Register Home",
+    titleWork: "Register Work",
+    titleAddress: "Register Address",
+    placeholder: "Insert the Address or the Zip Code"
 }
 
 const ADDRESS_DETAILS_CONTAINER = {
     title: "Inform your address",
     number: "nº",
     zip: "ZIP",
+    name: "Name",
     streetNumber: "Number",
     complement: "Complement (if there is one)",
+    reference: "Reference (optional)",
     identifyAddress: "Identify this address:",
     home: "Home",
     work: "Work",
+    address: "Address",
     other: "Other",
-    nameTheAddress: "Give this address a name:",
-    typeAddressName: "Type here the address name",
-    save: "SAVE",
+    save: "Save",
     fieldRequired: "Number (required field)",
     attention: "Attention",
     invalidAddress: "The address doesn't have the number typed",
     invalidZipCode: "The address doesn't have the zip code typed",
     defaultCountry: "Brazil",
     serverError: "A server error has ocorred, please try again later"
-}
-
-const ADDRESS_SEARCH_NAME_CONTAINER = {
-    title: "Inform the address:",
-    placeholder: "Type here the street's name"
-}
-
-const ADDRESS_SEARCH_ZIPCODE_CONTAINER = {
-    title: "Inform the ZIP Code",
-    placeholder: "Type here the ZIP Code",
-    defaultCountry: "Brazil"
-}
-
-const ADDRESS_SEARCH_GEOLOCATION_CONTAINER = {
-    title: "Confirm the address:"
 }
 
 const LOCATION_SETTINGS = {
@@ -394,9 +445,9 @@ const LOCATION_SETTINGS = {
 }
 
 const MODAL_ZIPCODE_COMPONENT = {
-    warningTitle: "Attention",
-    warningDescription: "We coudn't get all the information about your address, please complete your zip code bellow.",
-    confirmButton: "Confirm"
+    title: "Zip Code Confirmation",
+    subtitle: "Please check your zip code bellow, if that's not the right one you can change it.",
+    confirmButton: "Confirm Zip Code"
 }
 
 //CART CONTAINER
@@ -423,7 +474,7 @@ const CART_CONTAINER = {
     },
     paymentCartComponent:{
         totalPrice:"Total",
-        titleButtomPayment:"CHOOSE THE PAYMENT METHOD"
+        titleButtomPayment:"Choose the Payment Method"
     },
     cartController:{
         loginFail:"Login fail. Try again!",
@@ -495,6 +546,7 @@ const ORDER_STATUS_CONTAINER = {
 }
 
 const ORDER_STATUS_COMPONENT = {
+    freeOrderDelivery: "Free",
     orderNumber: "Order Number",
     statusTitle: "Status",
     orderReceived: "Order Received",
@@ -557,15 +609,15 @@ const LOGIN_USER_COMPONENT = {
     title: "Nice!",
     messageOrder: "To continue please log in",
     messageCheck: "To pay your check please log in",
-    buttonSignIn: "SIGN IN",
-    buttonSignUp: "I'M NOT REGISTERED"
+    buttonSignIn: "Sign In",
+    buttonSignUp: "I'm Not Registered"
 }
 
 //SELECT ADDRESS COMPONENT
 const SELECT_ADDRESS_COMPONENT = {
     title: "Almost there!",
     subtitle: "Now you need to select a delivery address",
-    buttonSelectAddress: "SELECT ADDRESS",
+    buttonSelectAddress: "Select Address",
 }
 
 //CHECK BAR COMPONENT
@@ -583,13 +635,13 @@ const CHECK_BAR_COMPONENT = {
 
 //MODAL_TABLE_NUMBER COMPONENT
 const MODAL_TABLE_NUMBER_COMPONENT = {
-    title: "HELP US FIND YOU",
-    subtitle: "TYPE YOUR TABLE"
+    title: "Help us find you",
+    subtitle: "Inform your table"
 }
 
 const MODAL_SUCCESS_ALERT_COMPONENT = {
-    yourOrder: "YOUR ORDER HAS BEEN",
-    confirmed: "CONFIRMED",
+    yourOrder: "Your order has been",
+    confirmed: "Confirmed",
     textConfirmedOrder: "Your order has been confirmed and soon will be delivered at your table. In case you want to check the details of what you already ordered, you can go to your check details.",
     gotIt: "OK"
 }
@@ -633,12 +685,14 @@ module.exports = {
     TAB_CONTAINER,
     OFFERS_CONTAINER,
     HEADER_COMPONENT,
-    UNITY_HEADER_SECTION_COMPONENT,
     UNITY_SHIFTS_COMPONENT,
     UNITY_CONTACT_COMPONENT,
     UNITY_INFORMATION_COMPONENT,
     CHECK_SUCCESS_CONTAINER,
     CHECK_SUCCESS_COMPONENT,
+    DISCOUNTS_CLUB_CONTAINER,
+    DISCOUNTS_CLUB_OFFERS_GROUP_CONTAINER,
+    DISCOUNTS_CLUB_TRADESMAN_DETAILS_CONTAINER,
     ORDER_TYPE_SELECTION_COMPONENT,
     SUCCESS_CONTAINER,
     SUCCESS_HEADER_COMPONENT,
@@ -653,15 +707,14 @@ module.exports = {
     PAY_WITH_FOOD_TICKET_COMPONENT,
     PAY_WITH_DEBIT_CARD_COMPONENT,
     PAYMENT_CONTROLLER,
+    PAYMENT_METHOD,
+    WORKING_HOURS,
     WALLET_ACCOUNT_BALANCE_COMPONENT,
     SELECT_CREDIT_CARD_COMPONENT,
     PRICE_SPECIFICATION,
     PRODUCT_DETAIL_COMPONENT,
     ADDRESS_LIST_CONTAINER,
     ADDRESS_SEARCH_CONTAINER,
-    ADDRESS_SEARCH_NAME_CONTAINER,
-    ADDRESS_SEARCH_ZIPCODE_CONTAINER,
-    ADDRESS_SEARCH_GEOLOCATION_CONTAINER,
     ADDRESS_DETAILS_CONTAINER,
     LOCATION_SETTINGS,
     CART_CONTAINER,

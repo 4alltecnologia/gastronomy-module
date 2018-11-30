@@ -108,8 +108,6 @@ export default class ModifierContainer extends PureComponent {
         this.setState({
             steps: steps
         })
-
-        return exist
     }
 
     render() {

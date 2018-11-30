@@ -104,9 +104,9 @@ export default class PayCartComponent extends PureComponent {
         },
         buttonPayment:{
             margin: 4,
-            color:FontColor.primary,
+            fontWeight: FontWeight.semibold,
             fontSize: 16,
-            fontWeight: FontWeight.medium
+            color: "white",
         }
     })
 

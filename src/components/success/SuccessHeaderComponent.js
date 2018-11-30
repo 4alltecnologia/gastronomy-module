@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { Image, View, Text, StyleSheet } from "react-native"
 import { FontFamily, FontColor, FontWeight, BackgroundColor } from "../../theme/Theme"
-import { paymentMethod, IdOrderType, formatDeliveryTime } from "../../utils"
+import { PAYMENT_METHOD, IdOrderType, formatDeliveryTime } from "../../utils"
 import Images from "../../assets/index"
 import { SUCCESS_HEADER_COMPONENT_STRINGS as SuccessStrings, GENERAL_STRINGS } from "../../languages/index"
 
@@ -132,7 +132,7 @@ export default class SuccessHeaderComponent extends Component {
                         { SuccessStrings.thanks }
                     </Text>
                     <Text style = { this.stylesText.paymentSuccessful } accessibilityLabel = "textPaymentSuccessful">
-                        { this.props.paymentMode == paymentMethod.CREDITCARD.id || this.props.paymentMode == paymentMethod.WALLET.id ? SuccessStrings.paymentSuccessfulNow : SuccessStrings.paymentSuccessfulDeliver }
+                        { this.props.paymentMode == PAYMENT_METHOD.CREDITCARD.id || this.props.paymentMode == PAYMENT_METHOD.WALLET.id ? SuccessStrings.paymentSuccessfulNow : SuccessStrings.paymentSuccessfulDeliver }
                     </Text>
                 </View>
                 <View style = { this.stylesView.icon } accessibilityLabel = "viewIcon">

@@ -5,9 +5,7 @@ import { findIndex } from "lodash"
 import { FontFamily, FontColor, FontWeight } from "../../theme/Theme"
 import Images from "../../assets/index"
 import { UsedDaysOfWeek, getOrderTypeName, screenWidthPercentage } from "../../utils"
-import UnityHeaderSectionComponent from "./UnityHeaderSectionComponent"
 import UnityShiftComponent from "./UnityShiftComponent"
-import { UNITY_HEADER_SECTION_COMPONENT_STRINGS as UnityHeaderStrings, UNITY_SHIFTS_COMPONENT_STRINGS as UnityShiftsStrings } from "../../languages/index"
 
 export default class UnityListShiftsComponent extends PureComponent {
 
@@ -205,8 +203,7 @@ export default class UnityListShiftsComponent extends PureComponent {
     render() {
         return (
             this.state.hourGroups.length > 0 ?
-                <View style={this.stylesView.general} accessibilityLabel="viewGeneral">
-                    <UnityHeaderSectionComponent title={UnityHeaderStrings.shifts} icon={Images.icons.clock}/>
+                <View style = { this.stylesView.general } accessibilityLabel = "viewGeneral">
                     { this.renderTabs() }
                 </View>
             : null

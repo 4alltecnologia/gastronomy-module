@@ -1,8 +1,8 @@
 import { makeRequest } from "./base/Libs"
-import { API_DATA_MKTP, API_DATA_ACCOUNT, API_DATA_GOOGLE_APIS, API_WALLET_ACCOUNT, RESPONSE_TYPE } from "../configs"
-import { paymentMethod, DeliveryDistance, IdOrderType } from "../utils"
-import { ExternalMethods } from "../native/Functions"
-import { getHeadersMktp, getEnvironment, getGoogleApiKey, getOrderType } from "../database/specialization/StorageGeneral"
+import { API_DATA_GOOGLE_APIS, RESPONSE_TYPE } from "./APIConfiguration"
+import APIConfiguration from "./APIConfiguration"
+import { getGoogleApiKey, getOrderType } from "../database/specialization/StorageGeneral"
+import { PAYMENT_METHOD, DeliveryDistance, IdOrderType } from "../utils"
 
 const URL_UNITIES = "/unities/"
 const URL_CATALOG = "/menus?idUnity="
@@ -16,239 +16,399 @@ const URL_ACCOUNT_ADD_ADDRESS = "/customer/addAddress"
 const URL_UNITIES_NEARBY = "/modular/unities?"
 const URL_ORDER = "/orders/"
 const URL_ORDERHISTORY = "/me/orders?sessionToken="
+const URL_DISCOUNTS_CLUB_USER_SAVINGS = "/me/savings"
 const URL_CHECKPAYMENT = "/payments"
 const URL_OFFERSNEARBY = "/products?onSale=true"
+const URL_DISCOUNTS_CLUB_HOME = "/discountClub/homes"
+const URL_DISCOUNTS_CLUB_OFFERS_GROUP = "/discountClub/offersGroups/"
+const URL_DISCOUNTS_CLUB_OFFER_DETAIL = "/discountClub/offers"
+const URL_ACCOUNT_DEFAULT_ADDRESS = "/customer/setDefaultAddress"
 
-export function getUnitiesNearby(lat, lon) {
+export function getDiscountsClubHome(lat, lon) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            var parameterLatLon = "lat=" + lat + "&lon=" + lon + "&distance=" + DeliveryDistance
+
+            const CONFIGS = {
+                url: apiData.url + URL_DISCOUNTS_CLUB_HOME + "?" + parameterLatLon,
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function getDiscountsClubOffersGroup(id, lat, lon) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            var parameterLatLon = "lat=" + lat + "&lon=" + lon
+            var parameterDistance = "&distance=" + DeliveryDistance
+
+            const CONFIGS = {
+                url: apiData.url + URL_DISCOUNTS_CLUB_OFFERS_GROUP + id + "?" + parameterLatLon + parameterDistance,
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function getOfferDetails(offer) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            var paramenterIdProduct = "idProduct=" + offer.idProduct
+            var parameterIdMenu = "idMenu=" + offer.idMenu
+
+            const CONFIGS = {
+                url: apiData.url + URL_DISCOUNTS_CLUB_OFFER_DETAIL + "?" + paramenterIdProduct + "&" + parameterIdMenu,
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function getTradesmanDetails(idUnity) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            var parameterIdUnity = "idUnity=" + idUnity
+
+            const CONFIGS = {
+                url: apiData.url + URL_DISCOUNTS_CLUB_OFFER_DETAIL + "?" + parameterIdUnity,
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function getUserSavings(sessionToken) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            var parameterUserSessionToken = "sessionToken=" + sessionToken
+
+            const CONFIGS = {
+                url: apiData.url + URL_DISCOUNTS_CLUB_USER_SAVINGS + "?" + parameterUserSessionToken,
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function getUnitiesNearby(lat, lon, zipcode) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            getOrderType((errorOrderType, orderType) => {
+                if (!!errorOrderType) {
+                    return reject( errorOrderType)
                 }
-                getOrderType((error, orderType) => {
-                    if (error) {
-                        reject(error)
-                    }
 
-                    var parameterLatLon = "lat=" + lat + "&lon=" + lon
-                    var parameterDistance = "&distance=" + DeliveryDistance
-                    var parameterOrderType = "&orderTypes=[" + orderType + "]"
+                var parameterLatLon = "lat=" + lat + "&lon=" + lon
+                var parameterDistance = "&distance=" + DeliveryDistance
+                var parameterOrderType = "&orderTypes=[" + orderType + "]"
+                var parameterZipCode = "&cep=" + zipcode
 
-                    const CONFIGS = {
-                        url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_UNITIES_NEARBY + parameterLatLon + parameterDistance + parameterOrderType,
-                        method: "GET",
-                        params: null,
-                        cacheTime: 0,
-                        headers: headers,
-                        timeout: 30000,
-                        responseType: RESPONSE_TYPE
-                    }
+                const CONFIGS = {
+                    url: apiData.url + URL_UNITIES_NEARBY + parameterLatLon + parameterDistance + parameterOrderType + parameterZipCode,
+                    method: "GET",
+                    params: null,
+                    cacheTime: 0,
+                    headers: apiData.headers,
+                    timeout: 30000,
+                    responseType: RESPONSE_TYPE
+                }
 
-                    makeRequest(CONFIGS, false).then(data => {
-                        resolve(data)
-                    }).catch(error => {
-                        reject(error)
-                    })
+                makeRequest(CONFIGS, false).then(data => {
+                    return resolve(data)
+                }).catch(error => {
+                    return reject(error)
                 })
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function checkDeliveryFee(cep, uf, city, neighborhood, idUnity) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_DELIVERY_FEE,
+                method: "POST",
+                params: {
+                    cep,
+                    uf,
+                    city,
+                    neighborhood,
+                    idUnity
+                },
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
-                }
-                const CONFIGS = {
-                    url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_DELIVERY_FEE,
-                    method: "POST",
-                    params: {
-                        cep,
-                        uf,
-                        city,
-                        neighborhood,
-                        idUnity
-                    },
-                    cacheTime: 0,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
 
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function getUnityDetails(unityId) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            var parameterStyle = "?style=gastronomy"
+
+            const CONFIGS = {
+                url: apiData.url + URL_UNITIES + unityId + parameterStyle,
+                method: "GET",
+                params: null,
+                cacheTime: 5,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
-                }
 
-                var parameterStyle = "?style=gastronomy"
-
-                const CONFIGS = {
-                    url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_UNITIES + unityId + parameterStyle,
-                    method: "GET",
-                    params: null,
-                    cacheTime: 5,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
-
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function getUnityCatalog(unityId) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
-            }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            getOrderType((errorOrderType, orderType) => {
+                if (!!errorOrderType) {
+                    return reject(errorOrderType)
                 }
-                getOrderType((error, orderType) => {
-                    if (error) {
-                        reject(error)
-                    }
 
-                    var parameterOrderType = "&orderTypes=[" + orderType + "]"
+                var parameterOrderType = "&orderTypes=[" + orderType + "]"
 
-                    const CONFIGS = {
-                        url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_CATALOG + unityId + parameterOrderType,
-                        method: "GET",
-                        params: null,
-                        cacheTime: 5,
-                        headers: headers,
-                        timeout: 30000,
-                        responseType: RESPONSE_TYPE
-                    }
+                const CONFIGS = {
+                    url: apiData.url + URL_CATALOG + unityId + parameterOrderType,
+                    method: "GET",
+                    params: null,
+                    cacheTime: 5,
+                    headers: apiData.headers,
+                    timeout: 30000,
+                    responseType: RESPONSE_TYPE
+                }
 
-                    makeRequest(CONFIGS, false).then(data => {
-                        resolve(data)
-                    }).catch(error => {
-                        reject(error)
-                    })
+                makeRequest(CONFIGS, false).then(data => {
+                    return resolve(data)
+                }).catch(error => {
+                    return reject(error)
                 })
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function getAddresses(sessionToken) {
     return new Promise((resolve, reject) => {
-        getEnvironment((error, environment) => {
-            if (error){
-                reject(error)
-            }
-            const data = ["addresses"]
+        APIConfiguration.getApiDataAccount().then(apiData => {
+            let data = ["addresses"]
+
             const CONFIGS = {
-                url: (environment == "prod" ? API_DATA_ACCOUNT.urlBaseProd : API_DATA_ACCOUNT.urlBaseHomolog) + URL_ACCOUNT_DATA,
+                url: apiData.url + URL_ACCOUNT_DATA,
                 method: "POST",
                 params: {
                     sessionToken,
                     data
                 },
                 cacheTime: 5,
-                headers: API_DATA_ACCOUNT.headers,
+                headers: apiData.headers,
                 timeout: 30000,
                 responseType: RESPONSE_TYPE
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function addAddress(sessionToken, addressInfo) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataAccount().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ACCOUNT_ADD_ADDRESS,
+                method: "POST",
+                params: {
+                    ...addressInfo,
+                    sessionToken
+                },
+                cacheTime: 5,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function deleteAddress(sessionToken, addressId) {
     return new Promise((resolve, reject) => {
-        getEnvironment((error, environment) => {
-            if (error){
-                reject(error)
-            }
+        APIConfiguration.getApiDataAccount().then(apiData => {
             const CONFIGS = {
-                url:(environment == "prod" ? API_DATA_ACCOUNT.urlBaseProd : API_DATA_ACCOUNT.urlBaseHomolog) + URL_ACCOUNT_DELETE_ADDRESS,
+                url: apiData.url + URL_ACCOUNT_DELETE_ADDRESS,
                 method: "POST",
                 params: {
                     sessionToken,
                     addressId
                 },
                 cacheTime: 5,
-                headers: API_DATA_ACCOUNT.headers,
+                headers: apiData.headers,
                 timeout: 30000,
                 responseType: RESPONSE_TYPE
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
+        })
+    })
+}
+
+export function setDefaultAddress(sessionToken, addressId) {
+    return new Promise((resolve, reject) => {
+        APIConfiguration.getApiDataAccount().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ACCOUNT_DEFAULT_ADDRESS,
+                method: "POST",
+                params: {
+                    sessionToken,
+                    addressId
+                },
+                cacheTime: 5,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function getAddressByZipCode(zipCode) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ADDRESS_BY_ZIPCODE + zipCode,
+                method: "GET",
+                params: null,
+                cacheTime: 5,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
-                }
-                const CONFIGS = {
-                    url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_ADDRESS_BY_ZIPCODE + zipCode,
-                    method: "GET",
-                    params: null,
-                    cacheTime: 5,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
 
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
@@ -256,11 +416,12 @@ export function getAddressByZipCode(zipCode) {
 export function getAddressByQueryAndLatLong(query, lat, long) {
     return new Promise((resolve, reject) => {
         getGoogleApiKey((error, googleApiKey) => {
-            if (error){
-                reject(error)
+            if (error) {
+                return reject(error)
             }
+
             let url = API_DATA_GOOGLE_APIS.urlBase + "place/autocomplete/json?language=pt-BR&types=address&components=country:br&input=" + query + "&key=" + googleApiKey
-            if (lat != null && lat != "") {
+            if (!!lat && !!long) {
                 url = url + "&location=" + lat + "," + long + "&radius=100000"
             }
 
@@ -275,9 +436,9 @@ export function getAddressByQueryAndLatLong(query, lat, long) {
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
         })
     })
@@ -286,8 +447,8 @@ export function getAddressByQueryAndLatLong(query, lat, long) {
 export function getAddressByLatLong(lat, long) {
     return new Promise((resolve, reject) => {
         getGoogleApiKey((error, googleApiKey) => {
-            if (error){
-                reject(error)
+            if (error) {
+                return reject(error)
             }
             let url = API_DATA_GOOGLE_APIS.urlBase + "geocode/json?key=" + googleApiKey + "&latlng=" + lat + "," + long
 
@@ -302,21 +463,22 @@ export function getAddressByLatLong(lat, long) {
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
         })
     })
 }
 
-export function getAddressByPlaceId(placeId) {
+export function getLatLongByAddress(query) {
     return new Promise((resolve, reject) => {
         getGoogleApiKey((error, googleApiKey) => {
             if (error){
-                reject(error)
+                return reject(error)
             }
-            let url = API_DATA_GOOGLE_APIS.urlBase + "place/details/json?key=" + googleApiKey + "&place_id=" + placeId
+            let url = API_DATA_GOOGLE_APIS.urlBase + "place/findplacefromtext/json?key=" + googleApiKey + "&inputtype=textquery&fields=geometry&input=" + query
+
             const CONFIGS = {
                 url: url,
                 method: "GET",
@@ -328,36 +490,36 @@ export function getAddressByPlaceId(placeId) {
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
         })
     })
 }
 
-export function addAddress(sessionToken, addressInfo) {
+export function getAddressByPlaceId(placeId) {
     return new Promise((resolve, reject) => {
-        getEnvironment((error, environment) => {
+        getGoogleApiKey((error, googleApiKey) => {
             if (error){
-                reject(error)
+                return reject(error)
             }
+            let url = API_DATA_GOOGLE_APIS.urlBase + "place/details/json?key=" + googleApiKey + "&place_id=" + placeId
+
             const CONFIGS = {
-                url: (environment == "prod" ? API_DATA_ACCOUNT.urlBaseProd : API_DATA_ACCOUNT.urlBaseHomolog) + URL_ACCOUNT_ADD_ADDRESS,
-                method: "POST",
-                params: {
-                    ...addressInfo,
-                    sessionToken
-                },
+                url: url,
+                method: "GET",
+                params: null,
                 cacheTime: 5,
-                headers: API_DATA_ACCOUNT.headers,
+                headers: API_DATA_GOOGLE_APIS.headers,
                 timeout: 30000,
                 responseType: RESPONSE_TYPE
             }
+
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
         })
     })
@@ -365,29 +527,24 @@ export function addAddress(sessionToken, addressInfo) {
 
 export function getWalletBalance(sessionToken) {
     return new Promise((resolve, reject) => {
-        getEnvironment((error, environment) => {
-            if (error){
-                reject(error)
-            }
-            let walletAccount = API_WALLET_ACCOUNT(sessionToken)
-
-            let url = (environment == "prod" ? walletAccount.urlBaseProd : walletAccount.urlBaseHomolog) + "balance"
-
+        APIConfiguration.getApiWalletAccount(sessionToken).then(apiData => {
             const CONFIGS = {
-                url: url,
+                url: apiData.url + "balance",
                 method: "GET",
                 params: null,
                 cacheTime: 0,
-                headers: walletAccount.headers,
+                headers: apiData.headers,
                 timeout: 30000,
                 responseType: RESPONSE_TYPE
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
@@ -395,14 +552,9 @@ export function getWalletBalance(sessionToken) {
 
 export function listCards(sessionToken) {
     return new Promise((resolve, reject) => {
-        getEnvironment((error, environment) => {
-            if (error){
-                reject(error)
-            }
-            let url = (environment == "prod" ? API_DATA_ACCOUNT.urlBaseProd : API_DATA_ACCOUNT.urlBaseHomolog) + URL_LIST_CARDS
-
+        APIConfiguration.getApiDataAccount().then(apiData => {
             const CONFIGS = {
-                url: url,
+                url: apiData.url + URL_LIST_CARDS,
                 method: "POST",
                 params: {
                     sessionToken: sessionToken,
@@ -410,299 +562,240 @@ export function listCards(sessionToken) {
                     itemCount: 5
                 },
                 cacheTime: 0,
-                headers: API_DATA_ACCOUNT.headers,
+                headers: apiData.headers,
                 timeout: 30000,
                 responseType: RESPONSE_TYPE
             }
 
             makeRequest(CONFIGS, false).then(data => {
-                resolve(data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function makePayment(sessionToken, cardId = "", paymentMode = 0, paymentMethodId = 0, brandId = 0, change = 0, cart, idOrderType) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            let customerInfo = {
+                sessionToken: sessionToken
             }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
-                }
-                let url = (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_PLACE_ORDER
 
-                let customerInfo = {
-                    sessionToken: sessionToken
-                }
+            if (paymentMode == PAYMENT_METHOD.CREDITCARD.id || paymentMode == PAYMENT_METHOD.WALLET.id) {
+                customerInfo.paymentMode = paymentMode
+                customerInfo.cardId = cardId
+            } else {
+                let paymentMethod = {}
 
-                if (paymentMode == paymentMethod.CREDITCARD.id || paymentMode == paymentMethod.WALLET.id) {
-                    customerInfo.paymentMode = paymentMode
-                    customerInfo.cardId = cardId
+                if (brandId == 0) {
+                    paymentMethod.id = paymentMethodId
+
+                    cart.paymentMethod = paymentMethod
+                    cart.change = change
                 } else {
-                    let paymentMethod = {}
-
-                    if (brandId == 0) {
-                        paymentMethod.id = paymentMethodId
-
-                        cart.paymentMethod = paymentMethod
-                        cart.change = change
-                    } else {
-                        paymentMethod.id = paymentMethodId
-                        let brand = {
-                            id: brandId
-                        }
-
-                        cart.paymentMethod = paymentMethod
-                        cart.brand = brand
+                    paymentMethod.id = paymentMethodId
+                    let brand = {
+                        id: brandId
                     }
+
+                    cart.paymentMethod = paymentMethod
+                    cart.brand = brand
                 }
+            }
 
-                cart.idOrderType = idOrderType
-                cart.customerInfo = customerInfo
+            cart.idOrderType = idOrderType
+            cart.customerInfo = customerInfo
 
-                const CONFIGS = {
-                    url: url,
-                    method: "POST",
-                    params: cart,
-                    cacheTime: 0,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
+            const CONFIGS = {
+                url: apiData.url + URL_PLACE_ORDER,
+                method: "POST",
+                params: cart,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
 
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function getOrderDetails(idOrder, isExtended = true) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ORDER + idOrder + "?style=extended",
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((error, environment) => {
-                if (error){
-                    reject(error)
-                }
-                const CONFIGS = {
-                    url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_ORDER + idOrder + "?style=extended", //(isExtended ? "?style=extended" : ""),
-                    method: "GET",
-                    params: null,
-                    cacheTime: 0,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
 
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
-export function getOrderHistory() {
+export function getOrderHistory(sessionToken) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((errorHeadersMktp, headers) => {
-            if (!!errorHeadersMktp){
-                reject(errorHeadersMktp)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ORDERHISTORY + sessionToken + "&style=extended",
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((errorEnvironment, environment) => {
-                if (!!errorEnvironment){
-                    reject(errorEnvironment)
-                }
-                ExternalMethods.getUserLogged((errorUser, resultUser) => {
-                    if (!!errorUser) {
-                        reject(errorUser)
-                    } else {
-                        const CONFIGS = {
-                            url: (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_ORDERHISTORY + resultUser.sessionToken + "&style=extended",
-                            method: "GET",
-                            params: null,
-                            cacheTime: 0,
-                            headers: headers,
-                            timeout: 30000,
-                            responseType: RESPONSE_TYPE
-                        }
 
-                        makeRequest(CONFIGS, false).then(data => {
-                            resolve(data)
-                        }).catch(error => {
-                            reject(error)
-                        })
-                    }
-                })
-
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function createCheckOrder(unityId, checkNumber) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((errorHeadersMktp, headers) => {
-            if (!!errorHeadersMktp) {
-                reject(errorHeadersMktp)
-            } else {
-                getEnvironment((errorEnvironment, environment) => {
-                    if (errorEnvironment){
-                        reject(errorEnvironment)
-                    }
-                    let url = (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_ORDER
-
-                    const CONFIGS = {
-                        url: url,
-                        method: "POST",
-                        params: {
-                            idUnity: unityId,
-                            idOrderType: IdOrderType.INSTORE.id,
-                            placeLabel: checkNumber
-                        },
-                        cacheTime: 0,
-                        headers: headers,
-                        timeout: 30000,
-                        responseType: RESPONSE_TYPE
-                    }
-
-                    makeRequest(CONFIGS, false).then(data => {
-                        resolve(data)
-                    }).catch(error => {
-                        reject(error)
-                    })
-                })
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ORDER,
+                method: "POST",
+                params: {
+                    idUnity: unityId,
+                    idOrderType: IdOrderType.INSTORE.id,
+                    placeLabel: checkNumber
+                },
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function addItemsCheck(orderId, tableNumber, orderItems, sessionToken) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((errorHeadersMktp, headers) => {
-            if (!!errorHeadersMktp) {
-                reject(errorHeadersMktp)
-            } else {
-                getEnvironment((error, environment) => {
-                    if (error) {
-                        reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            const CONFIGS = {
+                url: apiData.url + URL_ORDER + orderId + "/orderItems",
+                method: "POST",
+                params: {
+                    orderItems: orderItems,
+                    tableNumber: tableNumber,
+                    customerInfo: {
+                        sessionToken: sessionToken
                     }
-                    let url = (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_ORDER + orderId + "/orderItems"
-
-                    const CONFIGS = {
-                        url: url,
-                        method: "POST",
-                        params: {
-                            orderItems: orderItems,
-                            tableNumber: tableNumber,
-                            customerInfo: {
-                                sessionToken: sessionToken
-                            }
-                        },
-                        cacheTime: 0,
-                        headers: headers,
-                        timeout: 30000,
-                        responseType: RESPONSE_TYPE
-                    }
-
-                    makeRequest(CONFIGS, false).then(data => {
-                        resolve(data)
-                    }).catch(error => {
-                        reject(error)
-                    })
-                })
+                },
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
+
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
+            })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function checkPayment(orderId, sessionToken, cardId = "", paymentMode = 0) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            let customerInfo = {
+                sessionToken: sessionToken,
+                cardId: cardId,
+                paymentMode: paymentMode
             }
-            getEnvironment((error, environment) => {
-                if (error) {
-                    reject(error)
-                }
 
-                let url = (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_PLACE_ORDER + orderId + URL_CHECKPAYMENT
+            let params = {
+                customerInfo: customerInfo
+            }
 
-                let customerInfo = {
-                    sessionToken: sessionToken,
-                    cardId: cardId,
-                    paymentMode: paymentMode
-                }
+            const CONFIGS = {
+                url: apiData.url + URL_PLACE_ORDER + orderId + URL_CHECKPAYMENT,
+                method: "POST",
+                params: params,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
+            }
 
-                let params = {
-                    customerInfo: customerInfo
-                }
-
-                const CONFIGS = {
-                    url: url,
-                    method: "POST",
-                    params: params,
-                    cacheTime: 0,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
-
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }
 
 export function getOffersNearby(latitude, longitude) {
     return new Promise((resolve, reject) => {
-        getHeadersMktp((error, headers) => {
-            if (error){
-                reject(error)
+        APIConfiguration.getApiDataMktp().then(apiData => {
+            let url = apiData.url + URL_OFFERSNEARBY
+            url = url.concat(`&lat=${latitude}`)
+            url = url.concat(`&lon=${longitude}`)
+            url = url.concat(`&distance=${DeliveryDistance}`)
+
+            const CONFIGS = {
+                url: url,
+                method: "GET",
+                params: null,
+                cacheTime: 0,
+                headers: apiData.headers,
+                timeout: 30000,
+                responseType: RESPONSE_TYPE
             }
-            getEnvironment((error, environment) => {
-                if (error) {
-                    reject(error)
-                }
 
-                let url = (environment == "prod" ? API_DATA_MKTP.urlBaseProd : API_DATA_MKTP.urlBaseHomolog) + URL_OFFERSNEARBY
-                url = url.concat(`&lat=${latitude}`)
-                url = url.concat(`&lon=${longitude}`)
-                url = url.concat(`&distance=${DeliveryDistance}`)
-
-                const CONFIGS = {
-                    url: url,
-                    method: "GET",
-                    params: null,
-                    cacheTime: 0,
-                    headers: headers,
-                    timeout: 30000,
-                    responseType: RESPONSE_TYPE
-                }
-
-                makeRequest(CONFIGS, false).then(data => {
-                    resolve(data)
-                }).catch(error => {
-                    reject(error)
-                })
+            makeRequest(CONFIGS, false).then(data => {
+                return resolve(data)
+            }).catch(error => {
+                return reject(error)
             })
+        }).catch(error => {
+            return reject(error)
         })
     })
 }

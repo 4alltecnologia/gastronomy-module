@@ -22,7 +22,7 @@
 Put the module as dependency on the project`s package.json. 
 
 ```
-"gastronomy-module" : "git://github.com/4alltecnologia/gastronomy-module.git#v1.2.6"
+"gastronomy-module" : "git://github.com/4alltecnologia/gastronomy-module.git#v1.3.1"
 ```
 
 Run ```npm i``` to install
@@ -186,8 +186,7 @@ function startLogin() {
 	let userInfo = {
 		sessionToken: "SESSION_TOKEN",
 		emailAddress: "EMAIL_ADDRESS",
-		phoneNumber: "PHONE_NUMBER",
-		fullName: "FULL_NAME"
+		phoneNumber: "PHONE_NUMBER"
 	}
 		
 	return userInfo
@@ -332,6 +331,52 @@ On "AndroidManifest", add the following permissions
 ```
 
 Also on "AndroidManifest", it's required to add a Google Maps key (you can get one at: https://developers.google.com/maps/documentation/android-api/signup?hl=pt-br), to allow the application to show maps
+
+If you use the ```Lib4all``` in the project. On "build.gradle" (inside the "app" folder), add the following dependencies inside "dependencies"
+
+```
+compile "com.4all.libs:4all_accountLib:1.24.12"
+compile 'com.android.support:multidex:1.0.1'
+```
+
+Also on this "build.gradle", add the following lines inside "defaultConfig"
+
+```
+multiDexEnabled = true
+```
+
+On the "build.gradle" outside the "app" folder, add the following lines inside "allprojects"
+
+```
+repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        maven {
+            url "s3://utilitarios/android/libs"
+            credentials(AwsCredentials) {
+                accessKey "AKIAIKZVLB5XBW5NBDFA"
+                secretKey "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"
+            }
+        }
+    
+        maven {
+            // Zendesk public repo
+            url "https://zendesk.artifactoryonline.com/zendesk/repo/"
+        }
+        maven {
+            url "https://jitpack.io"
+        }
+}
+```
 
 ### Additional iOS Setup
 

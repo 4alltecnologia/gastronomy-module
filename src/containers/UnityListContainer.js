@@ -1,9 +1,9 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-navigation"
 import UnityListController from "../components/unityList/UnityListController"
 
-export default class UnityListContainer extends Component {
+export default class UnityListContainer extends PureComponent {
 
     stylesView = StyleSheet.create({
         safeArea: {

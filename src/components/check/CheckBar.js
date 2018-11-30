@@ -2,13 +2,14 @@ import React, { Component } from "react"
 import { Animated, Image, View, Text, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, ScrollView, Modal } from "react-native"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../theme/Theme"
 import Images from "../../assets/index"
-import { BASE_URL_IMAGE } from "../../configs"
+import { BASE_URL_IMAGE } from "../../api/APIConfiguration"
 import NewCatalogListComponent from "../catalog/NewCatalogListComponent"
-import { screenWidthPercentage, screenHeightPercentage } from "../../utils"
+import { screenWidthPercentage, screenHeightPercentage, FirebaseActions } from "../../utils"
 import { getCart } from "../../database/specialization/StorageCart"
 import { connect } from "react-redux"
 import { cartItens } from "../../redux/actions"
 import { CHECK_BAR_STRINGS } from "../../languages/index"
+import { ExternalMethods } from "../../native/Functions"
 
 class CheckBar extends Component {
 
@@ -210,8 +211,7 @@ class CheckBar extends Component {
                 showCurrentOrder: willShow,
                 canTouchCheckResume: false
             }, () => {
-                // this.props.showOverlay()
-
+                ExternalMethods.registerFirebaseEvent(willShow ? FirebaseActions.UNITY_DETAIL.actions.CHECK_BAR_EXPAND_ : FirebaseActions.UNITY_DETAIL.actions.CHECK_BAR_RETRACT, {})
                 var toValue = willShow ? 0 : screenHeightPercentage(70)
                 var toValueExpandBar = (willShow ? (parseInt(screenHeightPercentage(70))+58) : (this.props.isLogged ? 69 : 90))
 

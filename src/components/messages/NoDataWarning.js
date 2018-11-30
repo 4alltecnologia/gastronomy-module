@@ -40,8 +40,8 @@ export default class NoDataWarning extends PureComponent {
         },
         buttonTitle: {
             fontFamily: FontFamily.font,
-            fontWeight: FontWeight.light,
-            fontSize: 18,
+            fontWeight: FontWeight.semibold,
+            fontSize: 16,
             color: "white",
             backgroundColor: "transparent",
             textAlign: "center"

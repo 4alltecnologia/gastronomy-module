@@ -4,8 +4,7 @@ import { findIndex } from "lodash"
 import { FontFamily, FontColor } from "../../theme/Theme"
 import Moment from "moment"
 import Images from "../../assets/index"
-import UnityHeaderSectionComponent from "../unityInfo/UnityHeaderSectionComponent"
-import { UNITY_HEADER_SECTION_COMPONENT_STRINGS as UnityHeaderStrings, UNITY_SHIFTS_COMPONENT_STRINGS as UnityShiftsStrings } from "../../languages/index"
+import { UNITY_SHIFTS_COMPONENT_STRINGS as UnityShiftsStrings } from "../../languages/index"
 
 export default class UnityShiftComponent extends PureComponent {
 

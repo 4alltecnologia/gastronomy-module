@@ -16,11 +16,15 @@ const CacheStore = {
     get(key){
         const theKey = CACHE_PREFIX + key
         const exprKey = CACHE_EXPIRATION_PREFIX + key
-
-        return AsyncStorage.getItem(theKey).then((item) => {
-            return Promise.resolve(JSON.parse(item))
+        return AsyncStorage.getItem(exprKey).then((expiry) => {
+            if (expiry && currentTime() >= parseInt(expiry, 10)){
+                AsyncStorage.multiRemove([exprKey, theKey])
+                return new Promise.reject(null)
+            }
+            return AsyncStorage.getItem(theKey).then((item) => {
+                return (item ? Promise.resolve(JSON.parse(item)) : Promise.reject(null))
+            })
         })
-
     },
 
     set(key, value, time){
@@ -75,5 +79,8 @@ const CacheStore = {
         })
     }
 }
+
+// Always flush expired items on start time
+CacheStore.flushExpired()
 
 export default CacheStore

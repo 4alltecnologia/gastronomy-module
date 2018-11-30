@@ -1,32 +1,28 @@
-import React, { Component } from "react"
-import { Image, ImageBackground, View, Text, StyleSheet, TouchableOpacity, SectionList, RefreshControl, TouchableWithoutFeedback, Animated } from "react-native"
-import { FontFamily, FontWeight, FontColor, BackgroundColor  } from "../../theme/Theme"
+import React, { PureComponent } from "react"
+import { StyleSheet, View, Text, SectionList, RefreshControl } from "react-native"
+import { FontFamily, FontWeight, BackgroundColor } from "../../theme/Theme"
 import { UNITY_LIST_COMPONENT_STRINGS as UnityListStrings, GENERAL_STRINGS } from "../../languages/index"
-import { screenWidthPercentage } from "../../utils"
 import UnityListCellComponent from "./UnityListCellComponent"
 import UnityListHeaderComponent from "./UnityListHeaderComponent"
+import NoUnitiesWarning from "../messages/NoUnitiesWarning"
 
-const ADDRESS_BAR_HEIGHT = 40
-const ADDRESS_BAR_TEXT_OPACITY = 1
-
-export default class UnityListComponent extends Component {
-
-    styleView = StyleSheet.create({
+export default class UnityListComponent extends PureComponent {
+    stylesView = StyleSheet.create({
         general: {
             flex: 1,
-            backgroundColor: "white"
+            backgroundColor: "rgb(234,234,234)"
         },
-        topBarBackground : {
-            backgroundColor: "#3d3d3d",
-            width: screenWidthPercentage(100),
-            height: 40,
-            justifyContent: "center"
+        content: {
+            backgroundColor: BackgroundColor.primary
         },
         separator: {
             height: 1,
             backgroundColor: "#d1d1d1",
             marginHorizontal: 20,
             alignSelf: "stretch"
+        },
+        separatorView: {
+            backgroundColor: "white"
         }
     })
 
@@ -46,18 +42,7 @@ export default class UnityListComponent extends Component {
             address: props.address,
             loading: props.loading,
             openUnities: props.openUnities,
-            closedUnities: props.closedUnities,
-            addressBarHeight: new Animated.Value(0),
-            addressTextOpacity: new Animated.Value(0)
-        }
-
-        if (!!props.address) {
-            setTimeout(()=> {
-                Animated.parallel([
-                    Animated.spring(this.state.addressBarHeight, {toValue: ADDRESS_BAR_HEIGHT}),
-                    Animated.spring(this.state.addressTextOpacity, {toValue: ADDRESS_BAR_TEXT_OPACITY})
-                ]).start()
-            }, 1000)
+            closedUnities: props.closedUnities
         }
     }
 
@@ -68,15 +53,6 @@ export default class UnityListComponent extends Component {
             openUnities: nextProps.openUnities,
             closedUnities: nextProps.closedUnities
         })
-
-        if (!!nextProps.address) {
-            setTimeout(()=> {
-                Animated.parallel([
-                    Animated.spring(this.state.addressBarHeight, {toValue: ADDRESS_BAR_HEIGHT}),
-                    Animated.spring(this.state.addressTextOpacity, {toValue: ADDRESS_BAR_TEXT_OPACITY})
-                ]).start()
-            }, 1000)
-        }
     }
 
     _renderItem = ({ section, item }) => {
@@ -87,7 +63,9 @@ export default class UnityListComponent extends Component {
 
     _renderSeparator = () => {
         return (
-            <View style = { this.styleView.separator }/>
+            <View style = { this.stylesView.separatorView }>
+                <View style = { this.stylesView.separator }/>
+            </View>
         )
     }
 
@@ -99,17 +77,16 @@ export default class UnityListComponent extends Component {
 
     render() {
         return (
-            <View style = { this.styleView.general } accessibilityLabel = "viewContent">
-                <Animated.View style = { [this.styleView.topBarBackground, { height: this.state.addressBarHeight }] } accessibilityLabel = "viewTopBarBackground">
-                    <Animated.Text style = { [this.stylesText.address, { opacity: this.state.addressTextOpacity }] } numberOfLines = { 1 } accessibilityLabel = "textAddress">
-                        { this.props.address }
-                    </Animated.Text>
-                </Animated.View>
-                <View style = { this.styleView.general } accessibilityLabel = "viewSectionList">
+            <View style = { this.stylesView.general } accessibilityLabel = "viewGeneral">
+                { this.props.openUnities.length > 0 || this.props.closedUnities.length > 0 || this.props.isRefreshing ?
                     <SectionList
+                        contentContainerStyle = { this.stylesView.content }
                         renderItem = { this._renderItem }
                         renderSectionHeader = { this._renderSectionHeader }
-                        sections = { [{ data: this.state.openUnities }, { data: this.state.closedUnities, title: UnityListStrings.closedUnities }] }
+                        sections = { [{data: this.state.openUnities}, {
+                            data: this.state.closedUnities,
+                            title: UnityListStrings.closedUnities
+                        }] }
                         ItemSeparatorComponent = { this._renderSeparator }
                         keyExtractor = { this._keyExtractor }
                         stickySectionHeadersEnabled = { true }
@@ -117,7 +94,7 @@ export default class UnityListComponent extends Component {
                         refreshControl = {
                             <RefreshControl
                                 refreshing = { this.props.isRefreshing }
-                                onRefresh = { () => this.props.onRefresh() }
+                                onRefresh={() => this.props.onRefresh() }
                                 title = { GENERAL_STRINGS.loading }
                                 tintColor = { BackgroundColor.primary }
                                 titleColor = { BackgroundColor.primary }
@@ -129,7 +106,9 @@ export default class UnityListComponent extends Component {
                         onEndReachedThreshold = { 1200 }
                         removeClippedSubviews = { false }
                     />
-                </View>
+                    :
+                    <NoUnitiesWarning tryAgain = { this.props.onRefresh }/>
+                }
             </View>
         )
     }

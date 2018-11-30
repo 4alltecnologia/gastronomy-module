@@ -5,8 +5,8 @@ import PayHeaderComponent from "./PayHeaderComponent"
 import PayWithMoneyComponent from "./PayWithMoneyComponent"
 import PayWithFoodTicketComponent from "./PayWithFoodTicketComponent"
 import PayWithDebitCardComponent from "./PayWithDebitCardComponent"
-import { paymentMethod } from "../../utils"
-import { BASE_URL_IMAGE } from "../../configs"
+import { PAYMENT_METHOD } from "../../utils"
+import { BASE_URL_IMAGE } from "../../api/APIConfiguration"
 
 export default class PaymentOnDeliveryController extends PureComponent {
 
@@ -22,7 +22,7 @@ export default class PaymentOnDeliveryController extends PureComponent {
         }
     })
 
-    constructor(props){
+    constructor(props) {
         super(props)
 
         this.state = {
@@ -80,13 +80,13 @@ export default class PaymentOnDeliveryController extends PureComponent {
     validatePaymentMethods() {
         for (let method of this.state.paymentMethods) {
             switch (method.name) {
-                case paymentMethod.DEBIT.name:
+                case PAYMENT_METHOD.DEBIT.name:
                     let cardList = method.brands.map(card => {
                         return {
                             id: card.id,
                             name: card.name,
                             icon: !!card.thumb ? BASE_URL_IMAGE + card.thumb : "",
-                            type: paymentMethod.DEBIT
+                            type: PAYMENT_METHOD.DEBIT
                         }
                     })
 
@@ -95,13 +95,13 @@ export default class PaymentOnDeliveryController extends PureComponent {
                     this.state.isDebitAccepted = true
 
                     break
-                case paymentMethod.FOODTICKET.name:
+                case PAYMENT_METHOD.FOODTICKET.name:
                     let foodTicketList = method.brands.map(card => {
                         return {
                             id: card.id,
                             name: card.name,
                             icon: !!card.thumb ? BASE_URL_IMAGE + card.thumb : "",
-                            type: paymentMethod.FOODTICKET
+                            type: PAYMENT_METHOD.FOODTICKET
                         }
                     })
 
@@ -110,7 +110,7 @@ export default class PaymentOnDeliveryController extends PureComponent {
                     this.state.isFoodTicketAccepted = true
 
                     break
-                case paymentMethod.MONEY.name:
+                case PAYMENT_METHOD.MONEY.name:
                     this.state.isMoneyAccepted = true
                     break
             }

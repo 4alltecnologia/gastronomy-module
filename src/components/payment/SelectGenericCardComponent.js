@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { StyleSheet, View, Text, TouchableOpacity, Alert, Image } from "react-native"
 import { BackgroundColor, FontFamily } from "../../theme/Theme"
 import Images from "../../assets/index"
-import { paymentMethod } from "../../utils"
+import { PAYMENT_METHOD } from "../../utils"
 
 export default class SelectGenericCardComponent extends Component {
 
@@ -59,7 +59,7 @@ export default class SelectGenericCardComponent extends Component {
          return (
             <TouchableOpacity style = { this.stylesButton.general } onPress = { () => this.props.onShow(true) } accessibilityLabel = "touchableGeneral" >
                 <Image style = { this.stylesImage.icon }
-                       source = { this.props.card.icon ? { uri: this.props.card.icon } : this.props.card.type.name == paymentMethod.DEBIT.name ? Images.icons.creditCard : Images.icons.foodTicket }
+                       source = { this.props.card.icon ? { uri: this.props.card.icon } : this.props.card.type.name == PAYMENT_METHOD.DEBIT.name ? Images.icons.creditCard : Images.icons.foodTicket }
                        accessibilityLabel = "imageIcon"
                 />
                 <Text style = { this.stylesText.brandName } accessibilityLabel = "textBrandName">

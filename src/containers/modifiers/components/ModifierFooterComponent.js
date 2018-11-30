@@ -51,11 +51,11 @@ export default class ModifierFooterComponent extends PureComponent {
 
     stylesText = StyleSheet.create({
         addInCart: {
-            color:FontColor.primary,
+            marginRight: 5,
+            fontWeight: FontWeight.semibold,
             fontSize: 16,
+            color: "white",
             textAlign: "left",
-            fontWeight: FontWeight.medium,
-            marginRight:5
         },
         totalValue: {
             color: "rgb(61, 61, 61)",

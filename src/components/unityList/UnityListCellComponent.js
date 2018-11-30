@@ -2,10 +2,8 @@ import React, { PureComponent } from "react"
 import { Image, ImageBackground, View, Text, StyleSheet, TouchableWithoutFeedback } from "react-native"
 import { CachedImage } from "react-native-cached-image"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../theme/Theme"
-import { screenWidthPercentage, formatDeliveryTime, AnimationTypes } from "../../utils"
+import { screenWidthPercentage, AnimationTypes } from "../../utils"
 import Images from "../../assets/index"
-import { LANGUAGE } from "../../configs"
-import { GENERAL_STRINGS } from "../../languages/index"
 import * as Animatable from "react-native-animatable"
 
 export default class UnityListCellComponent extends PureComponent {
@@ -18,7 +16,8 @@ export default class UnityListCellComponent extends PureComponent {
             paddingHorizontal: 20,
             paddingVertical: 8,
             flexDirection: "row",
-            alignItems: "center"
+            alignItems: "center",
+            backgroundColor: "white"
         },
         unityDetails: {
             flex: 1,
@@ -53,8 +52,8 @@ export default class UnityListCellComponent extends PureComponent {
     stylesText = StyleSheet.create({
         unityName: {
             fontFamily: FontFamily.font,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontWeight: FontWeight.light,
+            fontSize: 16,
             color: FontColor.secondary
         },
         unityDistance: {
@@ -62,14 +61,16 @@ export default class UnityListCellComponent extends PureComponent {
             fontFamily: FontFamily.font,
             fontWeight: FontWeight.light,
             fontSize: 14,
-            color: FontColor.secondary
+            color: FontColor.secondary,
+            opacity: 0.5
         },
         unityDeliveryTime: {
             marginLeft: 4,
             fontFamily: FontFamily.font,
             fontWeight: FontWeight.light,
             fontSize: 14,
-            color: FontColor.secondary
+            color: FontColor.secondary,
+            opacity: 0.5
         }
     })
 
@@ -85,8 +86,8 @@ export default class UnityListCellComponent extends PureComponent {
             tintColor: BackgroundColor.primary
         },
         icon: {
-            height: 14,
-            width: 14,
+            height: 16,
+            width: 16,
             resizeMode: "contain",
             tintColor: BackgroundColor.primary
         }
@@ -99,7 +100,7 @@ export default class UnityListCellComponent extends PureComponent {
     render() {
         return (
             <TouchableWithoutFeedback onPress={ () => { this.props.onSelectUnity(this.props.unity) } }>
-                <Animatable.View delay = {100} animation = { AnimationTypes.FADE_IN } style = { this.stylesView.general } accessibilityLabel = "viewGeneral">
+                <View style = { this.stylesView.general } accessibilityLabel = "viewGeneral">
                     <CachedImage source = { !!this.props.unity.logo ? { uri: this.props.unity.logo } : Images.icons.placeholderStore }
                                  resizeMode = { "contain" }
                                  style = { this.stylesImage.unityLogo }
@@ -107,12 +108,12 @@ export default class UnityListCellComponent extends PureComponent {
                     />
                     <View style = { this.stylesView.unityDetails } accessibilityLabel = "viewUnityDetails">
                         <View style = { this.stylesView.unityName } accessibilityLabel = "viewUnityName">
-                            <Text style = { this.stylesText.name } numberOfLines = { 1 } accessibilityLabel = { "textUnityName" + this.props.unity.name }>
+                            <Text style = { this.stylesText.unityName } numberOfLines = { 1 } accessibilityLabel = { "textUnityName" + this.props.unity.name }>
                                 { this.props.unity.name }
                             </Text>
                         </View>
                         <View style = { this.stylesView.unityDistance } accessibilityLabel = "viewUnityDistance">
-                            <Image source = { Images.icons.pin } style = { this.stylesImage.icon } accessibilityLabel = "imagePinDistance"/>
+                            <Image source = { Images.icons.pinLocation } style = { this.stylesImage.icon } accessibilityLabel = "imagePinDistance"/>
                             <Text style = { this.stylesText.unityDistance } accessibilityLabel = "textUnityDistance">
                                 { this.props.unity.distance }
                             </Text>
@@ -127,7 +128,7 @@ export default class UnityListCellComponent extends PureComponent {
                     <View style = { this.stylesView.arrow } accessibilityLabel = "viewArrow">
                         <Image source = { Images.icons.arrowRight } style = { this.stylesImage.arrow } accessibilityLabel = "imageArrow"/>
                     </View>
-                </Animatable.View>
+                </View>
             </TouchableWithoutFeedback>
         )
     }

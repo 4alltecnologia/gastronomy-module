@@ -3,7 +3,7 @@ import { Animated, Image, ImageBackground, View, Text, TouchableOpacity, TextInp
 import { FontFamily, FontColor, FontWeight, BackgroundColor } from "../../theme/Theme"
 import { PAY_WITH_FOOD_TICKET_COMPONENT_STRINGS as PaymentStrings, GENERAL_STRINGS } from "../../languages/index"
 import Images from "../../assets/index"
-import { paymentMethod } from "../../utils"
+import { PAYMENT_METHOD } from "../../utils"
 
 import SelectGenericCardComponent from "./SelectGenericCardComponent"
 import { OptionsModal } from "../SelectGenericItemListComponent"
@@ -186,7 +186,7 @@ export default class PayWithFoodTicketComponent extends Component {
     constructor(props) {
         super(props)
 
-        let value = this.props.selectedPaymentMethod.name == paymentMethod.FOODTICKET.name ? true : false
+        let value = this.props.selectedPaymentMethod.name == PAYMENT_METHOD.FOODTICKET.name ? true : false
 
         this.state = {
             isFoodTicket: value,
@@ -199,7 +199,7 @@ export default class PayWithFoodTicketComponent extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.selectedPaymentMethod.name == paymentMethod.FOODTICKET.name) {
+        if (nextProps.selectedPaymentMethod.name == PAYMENT_METHOD.FOODTICKET.name) {
             this.setState({
                 isFoodTicket: true,
                 selectedOption: nextProps.selectedOption
@@ -214,7 +214,7 @@ export default class PayWithFoodTicketComponent extends Component {
     }
 
     onIsFoodTicket() {
-        this.props.onPayOnDeliveryTapped(paymentMethod.FOODTICKET)
+        this.props.onPayOnDeliveryTapped(PAYMENT_METHOD.FOODTICKET)
     }
 
     /**
@@ -287,7 +287,7 @@ export default class PayWithFoodTicketComponent extends Component {
                         </View>
                         <SelectGenericCardComponent card = { this.state.selectedOption } onShow = { this.onShow.bind(this) }/>
                         { this.state.isShowingOptions ? <OptionsModal options = { this.state.cardList }
-                                                                      animationType = 'none'
+                                                                      animationType = "fade"
                                                                       itemListStyle = { this.stylesDropdown.itemListTelcom }
                                                                       itemStyle = { this.stylesDropdown.itemTelcomSelected }
                                                                       onSelect = { this.onSelect.bind(this) }

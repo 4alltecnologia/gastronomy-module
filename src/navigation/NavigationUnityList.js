@@ -3,24 +3,22 @@ import { StackNavigator, NavigationActions } from "react-navigation"
 import { NavigationBackground, NavigationLeftButton, NavigationRightButton, NavigationTitleView } from "../utils"
 import {
     ADDRESS_LIST_CONTAINER_STRINGS,
-    ADDRESS_SEARCH_CONTAINER_STRINGS,
-    ADDRESS_DETAILS_CONTAINER_STRINGS,
     CART_CONTAINER_STRINGS,
     SUCCESS_CONTAINER_STRINGS,
     PAYMENT_CONTAINER_STRINGS,
-    ORDER_HISTORY_CONTAINER_STRINGS,
-    GENERAL_STRINGS
+    ORDER_HISTORY_CONTAINER_STRINGS
 } from "../languages"
-import NavigationHeader from "./NavigationHeader"
-import AddressListController from "../containers/addressList/AddressListController"
-import AddressSearchController from "../containers/addressSearch/AddressSearchController"
-import AddressDetailsController from "../containers/addressDetails/AddressDetailsController"
+import NavigationHeader from "./header/NavigationHeader"
+import AddressListContainer from "../containers/AddressListContainer"
+import AddressSearchContainer from "../containers/AddressSearchContainer"
+import AddressDetailsContainer from "../containers/AddressDetailsContainer"
 import SuccessContainer from "../containers/SuccessContainer"
 import ProductDetailContainer from "../containers/ProductDetailContainer"
 import CartContainer from "../containers/CartContainer"
 import PaymentContainer from "../containers/PaymentContainer"
 import UnityListContainer from "../containers/UnityListContainer"
 import NewUnityDetailContainer from "../containers/NewUnityDetailContainer"
+import UnityInfoContainer from "../containers/UnityInfoContainer"
 import ModifierContainer from "../containers/ModifierContainer"
 import OrderHistoryListContainer from "../containers/OrderHistoryListContainer"
 import OrderTypeSelectionContainer from "../containers/OrderTypeSelectionContainer"
@@ -51,7 +49,7 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
             })
         },
         OrderTypeSelectionContainer: {
-            screen: ({ navigation }) => <OrderTypeSelectionContainer navigation = { navigation }/>,
+            screen: OrderTypeSelectionContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -78,6 +76,20 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
                 )
             })
         },
+        UnityInfoContainer: {
+            screen: UnityInfoContainer,
+            navigationOptions: ({ navigation }) => ({
+                header: (
+                    <NavigationHeader navigation = { navigation }
+                                      titleView = { NavigationTitleView.CUSTOMTITLE }
+                                      leftButton = { NavigationLeftButton.BACK }
+                                      rightButton = { NavigationRightButton.NONE }
+                                      customTitle = { !!navigation.state.params.unity.name ? navigation.state.params.unity.name : "" } //UNITY NAME
+                                      shouldCloseModule = { screenProps.shouldCloseModule && screenProps.shouldUnityCloseModule }
+                    />
+                )
+            })
+        },
         OrderHistoryListContainer: {
             screen: ({ navigation }) => <OrderHistoryListContainer navigation = { navigation } hideButtonNoOrders = { screenProps.hideButtonNoOrders } updateNoOrders = { screenProps.updateNoOrders }/>,
             navigationOptions: ({ navigation }) => ({
@@ -91,8 +103,8 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
                 )
             })
         },
-        AddressList: {
-            screen: AddressListController,
+        AddressListContainer: {
+            screen: AddressListContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -103,26 +115,26 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
                 )
             })
         },
-        AddressSearch: {
-            screen: AddressSearchController,
+        AddressSearchContainer: {
+            screen: AddressSearchContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
                                       titleView = { NavigationTitleView.CUSTOMTITLE }
                                       leftButton = { NavigationLeftButton.BACK }
-                                      customTitle = { ADDRESS_SEARCH_CONTAINER_STRINGS.title }
+                                      customTitle = { ADDRESS_LIST_CONTAINER_STRINGS.title }
                     />
                 )
             })
         },
-        AddressDetails: {
-            screen: AddressDetailsController,
+        AddressDetailsContainer: {
+            screen: AddressDetailsContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
                                       titleView = { NavigationTitleView.CUSTOMTITLE }
                                       leftButton = { NavigationLeftButton.BACK }
-                                      customTitle = { ADDRESS_DETAILS_CONTAINER_STRINGS.title }
+                                      customTitle = { ADDRESS_LIST_CONTAINER_STRINGS.title }
                     />
                 )
             })
@@ -141,7 +153,7 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
             })
         },
         PaymentContainer: {
-            screen: ({ navigation }) => <PaymentContainer navigation = { navigation }/>,
+            screen: PaymentContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -153,7 +165,7 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
             })
         },
         CartContainer: {
-            screen: ({ navigation }) => <CartContainer navigation = { navigation }/>,
+            screen: CartContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }
@@ -166,7 +178,7 @@ export const UnityListStack = ({ initialRouteName, screenProps }) => {
             })
         },
         ProductDetailContainer: {
-            screen: ({ navigation }) => <ProductDetailContainer navigation = { navigation }/>,
+            screen: ProductDetailContainer,
             navigationOptions: ({ navigation }) => ({
                 header: (
                     <NavigationHeader navigation = { navigation }

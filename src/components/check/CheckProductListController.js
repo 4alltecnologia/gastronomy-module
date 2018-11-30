@@ -1,7 +1,7 @@
 import React, { Component } from "react"
-import { Alert, View, ScrollView, StyleSheet, StatusBar } from "react-native"
+import { Alert, View, ScrollView, StyleSheet } from "react-native"
 import { isDeviceConnected } from "../../utils"
-import { getOrderDetails } from "../../api/ApiRequests"
+import { getOrderDetails } from "../../api/APIRequests"
 import { ExternalMethods } from "../../native/Functions"
 import { FontColor } from "../../theme/Theme"
 import { GENERAL_STRINGS, STORAGE_CHECK_STRINGS } from "../../languages/index"
@@ -12,6 +12,7 @@ import LoginUserComponent from "../cart/LoginUserComponent"
 import CheckProductListComponent from "./CheckProductListComponent"
 import { connect } from "react-redux"
 import { setCheckName, setCheckNumber, setCheckOrderId, setTableNumber, setCheckUnity } from "../../redux/actions"
+import User from "../../models/User"
 
 class CheckProductListController extends Component {
 
@@ -103,9 +104,10 @@ class CheckProductListController extends Component {
     }
 
     _callLogin() {
-        ExternalMethods.startLogin((resultLogin) => {
+        ExternalMethods.startLogin((user) => {
+            ExternalMethods.registerFirebaseUser(new User(user))
             this.setState({
-                isUserLoggedIn: resultLogin,
+                isUserLoggedIn: !!user,
                 isLoading: true
             }, () => this._getProductList())
         })
@@ -118,7 +120,7 @@ class CheckProductListController extends Component {
     _renderFirstLoad() {
         return (
             <View>
-                <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                <Spinner visible = { this.state.isLoading } size = { 115 }/>
             </View>
         )
     }
@@ -126,7 +128,7 @@ class CheckProductListController extends Component {
     _renderNoInternet() {
         return (
             <View style = { this.stylesView.general }>
-                <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                <Spinner visible = { this.state.isLoading } size = { 115 }/>
                 <NoInternetWarning tryInternet = { this.onRefresh }/>
             </View>
         )
@@ -135,7 +137,7 @@ class CheckProductListController extends Component {
     _renderNoProducts() {
         return (
             <View style = { this.stylesView.general }>
-                <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                <Spinner visible = { this.state.isLoading } size = { 115 }/>
                 <NoProductsWarning onGoToCatalog = { this.props.onGoToCatalog }/>
             </View>
         )
@@ -151,7 +153,7 @@ class CheckProductListController extends Component {
         } else {
             return (
                 <View style = { this.stylesView.general }>
-                    <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                    <Spinner visible = { this.state.isLoading } size = { 115 }/>
                     <CheckProductListComponent productList = { this.state.productList }
                                                productTotal = { this.state.productTotal }
                                                tips = { this.state.tips }

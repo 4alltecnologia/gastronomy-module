@@ -1,9 +1,9 @@
-import React, { Component } from "react"
+import React, { PureComponent } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-navigation"
 import OrderHistoryListController from "../components/orderHistory/OrderHistoryListController"
 
-export default class OrderHistoryListContainer extends Component {
+export default class OrderHistoryListContainer extends PureComponent {
 
     stylesView = StyleSheet.create({
         safeArea: {
@@ -25,7 +25,8 @@ export default class OrderHistoryListContainer extends Component {
     render() {
         return (
             <SafeAreaView forceInset = {{ bottom: "never" }} style = { this.stylesView.safeArea }>
-                <OrderHistoryListController hideButtonNoOrders = { this.props.hideButtonNoOrders }
+                <OrderHistoryListController navigation = { this.props.navigation }
+                                            hideButtonNoOrders = { this.props.hideButtonNoOrders }
                                             updateNoOrders = { this.props.updateNoOrders ? this.props.updateNoOrders : this.goToUnityList }
                 />
             </SafeAreaView>

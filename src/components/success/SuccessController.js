@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react"
-import { ScrollView, StyleSheet, StatusBar } from "react-native"
+import { ScrollView, StyleSheet } from "react-native"
 import { getOrder } from "../../database/specialization/StorageOrder"
 import { getUnityMedia, MediaTypes, formatTime } from "../../utils"
 import SuccessBottomComponent from "./SuccessBottomComponent"
@@ -35,11 +35,9 @@ export default class SuccessController extends PureComponent {
         }
     }
 
-    render(){
-        let barStyle = FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
+    render() {
         return (
             <ScrollView style = { this.stylesView.scrollView } accessibilityLabel = "scrollView">
-                <StatusBar barStyle = { barStyle } accessibilityLabel="statusBar"/>
                 <SuccessHeaderComponent deliveryTime = { this.state.deliveryTime }
                                         deliveryEstimatedIdUnitTime = { this.state.deliveryEstimatedIdUnitTime }
                                         takeAwayEstimatedTime = { this.state.takeAwayEstimatedTime }

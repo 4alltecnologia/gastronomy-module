@@ -1,12 +1,12 @@
 import React, { PureComponent } from "react"
 import { Image, ImageBackground, View, Text, StyleSheet, TouchableOpacity, FlatList, Animated } from "react-native"
 import PropTypes from "prop-types"
-import Images from "../../assets/index"
-import { ORDER_TYPE_SELECTION_COMPONENT_STRINGS as OrderTypeStrings } from "../../languages/index"
-import { screenWidthPercentage } from "../../utils"
+import Images from "../../assets"
+import { ORDER_TYPE_SELECTION_COMPONENT_STRINGS as OrderTypeStrings } from "../../languages"
+import { screenWidthPercentage, AddressType } from "../../utils"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../theme/Theme"
 import OrderTypeSelectionCellComponent from "./OrderTypeSelectionCellComponent"
-import OrderTypeSelectionItem from "./model/OrderTypeSelectionItem"
+import OrderTypeSelection from "../../models/orderType/OrderTypeSelection"
 
 const ADDRESS_BAR_HEIGHT = 40
 const ADDRESS_BAR_TEXT_OPACITY = 1
@@ -94,18 +94,13 @@ export default class OrderTypeSelectionComponent extends PureComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (!!nextProps.address && nextProps.address != this.state.address) {
-            this.setState({
-                address: nextProps.address,
-                orderTypeSelectionList: nextProps.orderTypeSelectionList
-            })
-
+    componentDidMount() {
+        setTimeout(() => {
             Animated.parallel([
                 Animated.spring( this.state.addressBarHeight, { toValue: ADDRESS_BAR_HEIGHT } ),
                 Animated.spring( this.state.addressTextOpacity, { toValue: ADDRESS_BAR_TEXT_OPACITY } )
             ]).start()
-        }
+        }, 100)
     }
 
     _renderItem = ({item, index}) => {
@@ -128,33 +123,36 @@ export default class OrderTypeSelectionComponent extends PureComponent {
 
     render() {
         return (
-            <View style = { this.stylesView.general } accessibilityLabel = "viewGeneral">
-                <View style = { this.stylesView.header } accessibilityLabel = "viewHeader">
-                    <Image style = { this.stylesImage.headerImage } source = { Images.icons.gastronomy } accessibilityLabel = "imageHeaderImage"/>
-                    <Text style = { this.stylesText.headerTitle } accessibilityLabel = "textHeaderGastronomyTitle">
-                        { OrderTypeStrings.headerTitle }
+            <View style={this.stylesView.general} accessibilityLabel="viewGeneral">
+                <View style={this.stylesView.header} accessibilityLabel="viewHeader">
+                    <Image style={this.stylesImage.headerImage} source={Images.icons.gastronomy}
+                           accessibilityLabel="imageHeaderImage"/>
+                    <Text style={this.stylesText.headerTitle} accessibilityLabel="textHeaderGastronomyTitle">
+                        {OrderTypeStrings.headerTitle}
                     </Text>
                 </View>
-                    <Animated.View style = { [this.stylesView.addressBar, { height: this.state.addressBarHeight }] } accessibilityLabel = "viewTopBarBackground">
-                        <Animated.Text style = { [this.stylesText.address, { opacity: this.state.addressTextOpacity }] } accessibilityLabel = "textAddress">
-                            { this.state.address }
-                        </Animated.Text>
-                    </Animated.View>
-                <View style = { this.stylesView.orderTypeSelection } accessibilityLabel = "viewOrderTypeSelection">
-                    <Text style = { this.stylesText.selectOrderType } accessibilityLabel = "textSelectOrderType">
-                        { OrderTypeStrings.selectOrderType }
+                <Animated.View style={[this.stylesView.addressBar, {height: this.state.addressBarHeight}]}
+                               accessibilityLabel="viewTopBarBackground">
+                    <Animated.Text style={[this.stylesText.address, {opacity: this.state.addressTextOpacity}]}
+                                   accessibilityLabel="textAddress">
+                        { !!this.state.address ? this.state.address._parseFullAddress(AddressType.STREET_NEIGHBORHOOD_CITY) : ""}
+                    </Animated.Text>
+                </Animated.View>
+                <View style={this.stylesView.orderTypeSelection} accessibilityLabel="viewOrderTypeSelection">
+                    <Text style={this.stylesText.selectOrderType} accessibilityLabel="textSelectOrderType">
+                        {OrderTypeStrings.selectOrderType}
                     </Text>
-                    <View style = { this.stylesView.flatList }>
-                        <FlatList renderItem = { this._renderItem }
-                                  ItemSeparatorComponent = { this._renderSeparator }
-                                  data = { this.state.orderTypeSelectionList }
-                                  keyExtractor = { this._keyExtractor }
-                                  extraData = { this.state }
-                                  horizontal = { true }
-                                  scrollEnabled = { false }
-                                  disableVirtualization = { false }
-                                  onEndReachedThreshold = { 1200 }
-                                  removeClippedSubviews = { false }
+                    <View style={this.stylesView.flatList}>
+                        <FlatList renderItem={this._renderItem}
+                                  ItemSeparatorComponent={this._renderSeparator}
+                                  data={this.state.orderTypeSelectionList}
+                                  keyExtractor={this._keyExtractor}
+                                  extraData={this.state}
+                                  horizontal={true}
+                                  scrollEnabled={false}
+                                  disableVirtualization={false}
+                                  onEndReachedThreshold={1200}
+                                  removeClippedSubviews={false}
                         />
                     </View>
                 </View>
@@ -164,8 +162,8 @@ export default class OrderTypeSelectionComponent extends PureComponent {
 }
 
 OrderTypeSelectionComponent.propTypes = {
-    address: PropTypes.string,
-    orderTypeSelectionList: PropTypes.arrayOf(PropTypes.instanceOf(OrderTypeSelectionItem)).isRequired,
+    address: PropTypes.object,
+    orderTypeSelectionList: PropTypes.arrayOf(PropTypes.instanceOf(OrderTypeSelection)).isRequired,
     onPressOrderType: PropTypes.func.isRequired,
 }
 

@@ -1,9 +1,9 @@
 import React, { PureComponent } from "react"
-import { View, ScrollView, Alert, StyleSheet, StatusBar } from "react-native"
+import { View, ScrollView, Alert, StyleSheet, LayoutAnimation, UIManager, Platform } from "react-native"
 import { NavigationActions } from "react-navigation"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
-import { paymentMethod, getUnityMedia, MediaTypes } from "../../utils"
-import { makePayment, getOrderDetails } from "../../api/ApiRequests"
+import { PAYMENT_METHOD, getUnityMedia, MediaTypes, FirebaseActions } from "../../utils"
+import { makePayment, getOrderDetails } from "../../api/APIRequests"
 import { ExternalMethods }from "../../native/Functions"
 import { getUnity } from "../../database/specialization/StorageUnity"
 import { GENERAL_STRINGS, SUCCESS_CONTAINER_STRINGS, PAYMENT_CONTROLLER_STRINGS as PaymentStrings } from "../../languages/index"
@@ -17,6 +17,7 @@ import PaymentButtonComponent from "./PaymentButtonComponent"
 import NoInternetWarning from "../../components/messages/NoInternetWarning"
 import { cartToPay, resetCart } from "../../database/specialization/StorageCart"
 import { saverOrder, saverOrderId } from "../../database/specialization/StorageOrder"
+import User from "../../models/User"
 
 export default class PaymentController extends PureComponent {
 
@@ -31,16 +32,10 @@ export default class PaymentController extends PureComponent {
 
     constructor(props){
         super(props)
-        /**
-         * @type {{
-         * deliveryTime: Delivery time,
-         * subtotalValue: Subtotal value,
-         * deliveryValue: Delivery value,
-         * totalValue: Total value,
-         * paymentMethods: Array with payment methods accepted on delivery,
-         * selectedPaymentMethod:
-         * }}
-         */
+
+        if (Platform.OS === "android") {
+            UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true)
+        }
 
         this.state = {
             cart: this.props.cart,
@@ -52,7 +47,7 @@ export default class PaymentController extends PureComponent {
             deliveryValue: props.cart.deliveryFee,
             totalValue: props.cart.total,
             paymentMethods: props.cart.unity.paymentMethods,
-            selectedPaymentMethod: paymentMethod.CREDITCARD,
+            selectedPaymentMethod: PAYMENT_METHOD.CREDITCARD,
             needChange: true,
             change: 0,
             cardId: null,
@@ -75,16 +70,36 @@ export default class PaymentController extends PureComponent {
         this.refreshController = this._refreshController.bind(this)
     }
 
+    componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.PAYMENT.screen)
+
+        this.props.navigation.addListener("willFocus", payload => {
+            ExternalMethods.registerFirebaseScreen(FirebaseActions.PAYMENT.screen)
+
+            ExternalMethods.hasUserLogged((isLogged) => {
+                if (!isLogged) {
+                    this.props.navigation.goBack()
+                }
+            })
+        })
+    }
+
     //Set payment method from credit card, wallet 4all, debit card, food ticket or money
     _onChangePaymentMethod(newPaymentMethod) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.PAYMENT.actions.CHANGED_PAYMENT_METHOD, { paymentMethod: newPaymentMethod.key })
+
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         this.setState({
             selectedPaymentMethod: newPaymentMethod,
-            cardId: newPaymentMethod.name == paymentMethod.WALLET.name ? paymentMethod.WALLET.cardIdName : this.state.cardId
+            cardId: newPaymentMethod.name == PAYMENT_METHOD.WALLET.name ? PAYMENT_METHOD.WALLET.cardIdName : this.state.cardId
         })
     }
 
     //Set card id from credit card when the user pays with 4all
     _onCreditCardChanged(cardId) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         this.setState({
             cardId: cardId
         })
@@ -92,6 +107,8 @@ export default class PaymentController extends PureComponent {
 
     //Set card brand id from debit card or food ticket for payment on delivery
     _onBrandIdChanged(brandId) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         this.setState({
             brandId: brandId
         })
@@ -99,6 +116,8 @@ export default class PaymentController extends PureComponent {
 
     //Set the user's need to receive change
     _onNeedChange(value) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         this.setState({
             needChange: value
         })
@@ -106,6 +125,8 @@ export default class PaymentController extends PureComponent {
 
     //Set change when the user types it
     _onChangeTyped(change) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         this.setState({
             change: change
         })
@@ -120,9 +141,11 @@ export default class PaymentController extends PureComponent {
             if (error) {
                 this.setState({
                     isLoading: false,
-                    isButtonEnabled: false
-                }, () => ExternalMethods.startLogin((resultLogin) => {
-                    this._makePayment(resultLogin.sessionToken)
+                    isButtonEnabled: true
+                }, () => ExternalMethods.startLogin((user) => {
+                    ExternalMethods.registerFirebaseUser(new User(user))
+
+                    this._makePayment(user.sessionToken)
                 }))
             } else {
                 this._makePayment(resultUserLogged.sessionToken)
@@ -171,13 +194,13 @@ export default class PaymentController extends PureComponent {
         let change = 0
         let idOrderType = this.state.idOrderType
 
-        if (this.state.selectedPaymentMethod.name == paymentMethod.WALLET.name) {
+        if (this.state.selectedPaymentMethod.name == PAYMENT_METHOD.WALLET.name) {
             cardId = this.state.cardId
-            paymentMode = paymentMethod.WALLET.id
-        } else if (this.state.selectedPaymentMethod.name == paymentMethod.CREDITCARD.name) {
+            paymentMode = PAYMENT_METHOD.WALLET.id
+        } else if (this.state.selectedPaymentMethod.name == PAYMENT_METHOD.CREDITCARD.name) {
             if (!!this.state.cardId) {
                 cardId = this.state.cardId
-                paymentMode = paymentMethod.CREDITCARD.id
+                paymentMode = PAYMENT_METHOD.CREDITCARD.id
             } else {
                 Alert.alert(
                     GENERAL_STRINGS.warning,
@@ -194,14 +217,14 @@ export default class PaymentController extends PureComponent {
                 )
                 return
             }
-        } else if (this.state.selectedPaymentMethod.name == paymentMethod.DEBIT.name) {
+        } else if (this.state.selectedPaymentMethod.name == PAYMENT_METHOD.DEBIT.name) {
             brandId = this.state.brandId
-            paymentMethodId = paymentMethod.DEBIT.id
-        } else if (this.state.selectedPaymentMethod.name == paymentMethod.FOODTICKET.name) {
+            paymentMethodId = PAYMENT_METHOD.DEBIT.id
+        } else if (this.state.selectedPaymentMethod.name == PAYMENT_METHOD.FOODTICKET.name) {
             brandId = this.state.brandId
-            paymentMethodId = paymentMethod.FOODTICKET.id
-        } else if (this.state.selectedPaymentMethod.name == paymentMethod.MONEY.name) {
-            paymentMethodId = paymentMethod.MONEY.id
+            paymentMethodId = PAYMENT_METHOD.FOODTICKET.id
+        } else if (this.state.selectedPaymentMethod.name == PAYMENT_METHOD.MONEY.name) {
+            paymentMethodId = PAYMENT_METHOD.MONEY.id
             if (this.state.needChange) {
                 if (this.state.change <= this.state.totalValue) {
                     Alert.alert(
@@ -231,17 +254,18 @@ export default class PaymentController extends PureComponent {
                     isButtonEnabled: true
                 })
             } else {
+                ExternalMethods.registerFirebaseEvent(FirebaseActions.PAYMENT.actions.PAY, { paymentMethod: this.state.selectedPaymentMethod.key, idOrderType: idOrderType })
                 makePayment(sessionToken, cardId, paymentMode, paymentMethodId, brandId, change, cart, idOrderType).then(response => {
                     if (!!response.id && !!response.estimatedTimestamp) {
                         resetCart((error) => {
                             getOrderDetails(response.id).then(orderDetails => {
+                                ExternalMethods.registerFirebaseEvent(FirebaseActions.PAYMENT.actions.PAY_SUCCESS, { orderId: orderDetails.id })
                                 const successAction = NavigationActions.reset({
                                     index: 0,
                                     actions: [
                                         NavigationActions.navigate({
                                             routeName: "SuccessContainer",
                                             params: {
-                                                navigation: this.props.navigation,
                                                 subtotalValue: this.state.subtotalValue,
                                                 totalValue: this.state.totalValue,
                                                 paymentMode: paymentMode,
@@ -299,16 +323,14 @@ export default class PaymentController extends PureComponent {
 
     _onScrollToInput = (reactNode: any) => {
         setTimeout(() => {
-            this.scroll.props.scrollToFocusedInput(reactNode,180)
+            this.scroll.props.scrollToFocusedInput(reactNode, 180)
         }, 100)
     }
 
     render() {
-        let barStyle = FontColor.primary == "#FFFFFF" ? "light-content" : "dark-content"
         if (this.state.isConnected){
             return (
                 <KeyboardAwareScrollView innerRef={ref => {this.scroll = ref}} enableOnAndroid={true} style={this.stylesView.scrollview} accessibilityLabel="scrollViewScroll" keyboardOpeningTime={300}>
-                    <StatusBar barStyle = { barStyle } accessibilityLabel="statusBar"/>
                     <Spinner visible = { this.state.isLoading }/>
                     <PaymentHeaderComponent/>
                     <PaymentNowController
@@ -318,7 +340,7 @@ export default class PaymentController extends PureComponent {
                         onLoadingCards = { this.onLoadingCards }
                         onIsDeviceConnected = { this.onIsDeviceConnected }
                     />
-                    {this.state.paymentMethods.length > 0 ?
+                    { this.state.paymentMethods.length > 0 ?
                         <PaymentOnDeliveryController
                             onChangePaymentMethod = { this.onChangePaymentMethod }
                             selectedPaymentMethod = { this.state.selectedPaymentMethod }

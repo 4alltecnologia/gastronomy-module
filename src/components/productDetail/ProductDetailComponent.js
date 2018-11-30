@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react"
-import { StatusBar, findNodeHandle, View, StyleSheet, Text, SectionList, TouchableOpacity, Image, ScrollView, TextInput, Animated, Platform } from "react-native"
+import { findNodeHandle, View, StyleSheet, Text, SectionList, TouchableOpacity, Image, ScrollView, TextInput, Animated, Platform } from "react-native"
 import LinearGradient from "react-native-linear-gradient"
 import { FontFamily, BackgroundColor, FontColor, FontWeight } from "../../theme/Theme"
 import { GENERAL_STRINGS, PRODUCT_DETAIL_STRINGS } from "../../languages/index"
@@ -21,7 +21,8 @@ export default class ProductDetailComponent extends PureComponent {
             backgroundColor: "white"
         },
         scrollView: {
-            flex: 1
+            flex: 1,
+            backgroundColor: "transparent"
         },
         gradient: {
             position: "absolute",
@@ -40,7 +41,8 @@ export default class ProductDetailComponent extends PureComponent {
             position: "absolute",
             top: 0,
             left: 0,
-            right: 0
+            right: 0,
+            zIndex: -10
         },
         productDescriptionModifiers: {
             flex: 1
@@ -156,9 +158,9 @@ export default class ProductDetailComponent extends PureComponent {
         },
         addInCart: {
             fontFamily: FontFamily.font,
-            fontSize: 18,
-            fontWeight: FontWeight.medium,
-            color: FontColor.primary,
+            fontWeight: FontWeight.semibold,
+            fontSize: 16,
+            color: "white",
             textAlign: "left"
         }
     })
@@ -170,7 +172,7 @@ export default class ProductDetailComponent extends PureComponent {
             paddingHorizontal: 8,
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-around",
+            justifyContent: "center",
             backgroundColor: BackgroundColor.primary,
             borderRadius: 8
         }
@@ -192,9 +194,10 @@ export default class ProductDetailComponent extends PureComponent {
             resizeMode: "contain",
             tintColor: BackgroundColor.primary
         },
-        cart:{
+        cart: {
             width: 28,
             height: 28,
+            marginLeft: 8,
             resizeMode: "contain",
             tintColor: FontColor.primary
         }

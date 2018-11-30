@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react"
-import { View, ScrollView, ActivityIndicator, Text, Alert, StyleSheet } from "react-native"
+import { View, ScrollView, ActivityIndicator, Text, Alert, StyleSheet, LayoutAnimation, UIManager, Platform } from "react-native"
 import UnityInformationComponent from "./UnityInformationComponent"
 import ListProducts from "./ListProductsComponent"
 import Address from "./AddressCartComponent"
@@ -7,26 +7,26 @@ import PayCart from "./PayCartComponent"
 import LoginUserComponent from "./LoginUserComponent"
 import SelectAddressComponent from "./SelectAddressComponent"
 import IndoorDeliveryComponent from "./IndoorDeliveryComponent"
+import AddressListModal from "../addressList/AddressListModal"
 import { plusProduct, removeProduct, getCart, setField } from "../../database/specialization/StorageCart"
-import { getUnity } from "../../database/specialization/StorageUnity"
-import { getOrderType } from "../../database/specialization/StorageGeneral"
-import { checkDeliveryFee } from "../../api/ApiRequests"
+import { checkDeliveryFee } from "../../api/APIRequests"
 import { ExternalMethods } from "../../native/Functions"
 import { GENERAL_STRINGS, CART_CONTAINER_STRINGS, LOGIN_USER_COMPONENT_STRINGS as LoginStrings } from "../../languages/index"
-import { getUnityMedia, MediaTypes, IdOrderType } from "../../utils"
+import { getUnityMedia, MediaTypes, IdOrderType, FirebaseActions } from "../../utils"
 import { connect } from "react-redux"
-import { totalCart } from "../../redux/actions"
+import { totalCart, setCurrentAddress, setUnityId } from "../../redux/actions"
+import User from "../../models/User"
 
 class CartController extends PureComponent {
 
     stylesView = StyleSheet.create({
-        noProducts:{
+        noProducts: {
             flex:1,
             backgroundColor:"#FFFFFF",
             alignItems:"center",
             justifyContent:"center"
         },
-        content:{
+        content: {
             flex:1,
             backgroundColor:"#FFFFFF"
         },
@@ -39,13 +39,17 @@ class CartController extends PureComponent {
     })
 
     stylesActivity = StyleSheet.create({
-        content:{
+        content: {
             flex:1
         }
     })
 
     constructor(props){
         super(props)
+
+        if (Platform.OS === "android") {
+            UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true)
+        }
 
         this.state = {
             nameUnity: "",
@@ -57,25 +61,49 @@ class CartController extends PureComponent {
             deliveryFee: 0,
             isLoadingDeliveryFee: true,
             deliveryEstimatedTime: 0,
-            addressSelected: null,
             isUserLoggedIn: false,
             currentOrderType: [],
             isOutdoorDelivery: false,
-            deliveryMethod: null
+            deliveryMethod: null,
+            validAddress: true,
+            showModalAddress: false
         }
+
+        this.onNavigateToUnity = this._onNavigateToUnity.bind(this)
+        this.changeAddress = this._changeAddress.bind(this)
+        this.closeModalAddress = this._closeModalAddress.bind(this)
+    }
+
+    _onNavigateToUnity() {
+        this.props.setUnityId(this.state.idUnity)
+        this.props.navigation.navigate("NewUnityDetailContainer")
     }
 
     componentDidMount() {
-        ExternalMethods.hasUserLogged((isLogged) => {
-            this.setState({
-                isUserLoggedIn: isLogged
-            }, this.getCartData(isLogged))
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.CART.screen)
+
+        this.props.navigation.addListener("willFocus", payload => {
+            ExternalMethods.registerFirebaseScreen(FirebaseActions.CART.screen)
+            ExternalMethods.hasUserLogged((isLogged) => {
+                this.setState({
+                    isUserLoggedIn: isLogged,
+                    validAddress: false
+                }, this.getCartData())
+            })
         })
     }
 
-    getCartData(isLogged) {
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.quantity === this.props.quantity) {
+            this.setState({
+                isLoadingDeliveryFee: true
+            }, () => this.getCartData())
+        }
+    }
+
+    getCartData() {
         getCart((error, data) => {
-            if (error || !data) {
+            if (error || !data || data.total === 0) {
                 this.setState({
                     isLoadingDeliveryFee: false,
                     products:[]
@@ -109,6 +137,8 @@ class CartController extends PureComponent {
                 unityData.takeAwayEstimatedIdUnitTime = data.unity.takeAwayEstimatedIdUnitTime
             }
 
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
             this.setState({
                 currentOrderTypeList: data.idOrderType,
                 isOutdoorDelivery: data.idOrderType.includes(IdOrderType.DELIVERY.id),
@@ -124,11 +154,15 @@ class CartController extends PureComponent {
                 takeAwayEstimatedTime: unityData.takeAwayEstimatedTime,
                 takeAwayEstimatedIdUnitTime: unityData.takeAwayEstimatedIdUnitTime,
                 indoorDeliveryMethods: unityData.indoorDeliveryMethods
-            }, () => this.checkDelivery(isLogged ? data.address : null))
+            }, () => this.checkDelivery())
         })
     }
 
     onPlusPressed(productID, idOnCart){
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CART.actions.ADD, { productId: productID })
+
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         plusProduct(productID, idOnCart, (error, data) => {
             this.props.totalCart(this.props.quantity+1)
             this.setState({
@@ -140,9 +174,13 @@ class CartController extends PureComponent {
     }
 
     onMinusPressed(productID, idOnCart){
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CART.actions.REMOVE, { productId: productID })
+
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
         removeProduct(productID, idOnCart, (error, data) => {
             this.props.totalCart(this.props.quantity-1)
-            if (!error && data){
+            if (!error && data) {
                 this.setState({
                     products:data.products,
                     subtotal:data.productTotal,
@@ -159,13 +197,15 @@ class CartController extends PureComponent {
     }
 
     signIn() {
-        ExternalMethods.startLogin((loginSuccess) => {
-            if (loginSuccess) {
-                // this.checkCompletedUserData()
-                this.setState({
-                    isUserLoggedIn: loginSuccess
-                })
-            }
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CART.actions.LOGIN, {})
+        ExternalMethods.startLogin((user) => {
+            ExternalMethods.registerFirebaseUser(new User(user))
+
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+
+            this.setState({
+                isUserLoggedIn: !!user
+            })
         })
     }
 
@@ -178,85 +218,91 @@ class CartController extends PureComponent {
         })
     }
 
-    onSelectAddress() {
-        this.props.navigation.navigate("AddressList", {
-            onReceiveAddressSelected:this.onReceiveAddressSelected.bind(this),
-            onReceiveAddressRemove:this.onReceiveAddressRemove.bind(this)
-        })
-    }
-
-    onReceiveAddressSelected(address) {
-        this.checkDelivery(address)
-    }
-
-    onReceiveAddressRemove(address){
-        if (this.state.addressSelected != null && this.state.addressSelected.id == address.id){
-            setField([{name:"deliveryFee", value:0},{name:"address", value:null}], (error, datasave) => {
-                this.setState({
-                    deliveryFee:0,
-                    total:datasave.total,
-                    isLoadingDeliveryFee:false,
-                    addressSelected:null
-                })
-            })
-        }
-    }
-
     onSelectIndoorDeliveryMethod(indoorDeliveryMethod) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CART.actions.CHOOSE_INDOOR_METHOD, { indoorDeliveryMethod: indoorDeliveryMethod })
         this.setState({
             deliveryMethod: indoorDeliveryMethod
         })
     }
 
-    checkDelivery(address) {
-        if (!!address){
+    checkDelivery(address = null) {
+        if (this.state.isOutdoorDelivery && !!this.props.currentAddress && !!this.props.currentAddress.isDefault) {
             this.setState({
-                isLoadingDeliveryFee:true
-            })
-            checkDeliveryFee(address.zip, address.province, address.city, address.neighborhood, this.state.idUnity).then(data => {
-                setField([{name:"deliveryFee", value:data.fee},{name:"address", value:address}], (error, datasave) => {
-                    this.setState({
-                        deliveryFee:data.fee,
-                        total:datasave.total,
-                        isLoadingDeliveryFee:false,
-                        addressSelected:address
-                    })
-                })
-            }).catch(error => {
-                Alert.alert(
-                    GENERAL_STRINGS.warning,
-                    CART_CONTAINER_STRINGS.cartController.addressNotSupported,
-                    [
-                        {text: GENERAL_STRINGS.ok, style: "cancel",  onPress: () => {
-                            setField([{name:"deliveryFee", value:0},{name:"address", value:null}], (error, datasave) => {
-                                this.setState({
-                                    deliveryFee:0,
-                                    total:datasave.total,
-                                    isLoadingDeliveryFee:false,
-                                    addressSelected:null
-                                })
+                    isLoadingDeliveryFee:true
+                }, () =>
+                    checkDeliveryFee(this.props.currentAddress.zip, this.props.currentAddress.province, this.props.currentAddress.city, this.props.currentAddress.neighborhood, this.state.idUnity).then(data => {
+                        setField([{name:"deliveryFee", value:data.fee},{name:"address", value:this.props.currentAddress}], (error, datasave) => {
+                            this.setState({
+                                deliveryFee: data.fee,
+                                total: datasave.total,
+                                isLoadingDeliveryFee: false,
+                                validAddress: true
                             })
-                        }}
-                    ]
-                )
-            })
+                        })
+                    }).catch(error => {
+                        setField([{name:"deliveryFee", value:0},{name:"address", value:null}], (error, datasave) => {
+                            this.setState({
+                                deliveryFee: 0,
+                                validAddress: false,
+                                isLoadingDeliveryFee: false,
+                                total: datasave.total
+                            }, () =>
+                                Alert.alert(
+                                    GENERAL_STRINGS.warning,
+                                    CART_CONTAINER_STRINGS.cartController.addressNotSupported,
+                                    [
+                                        {text: GENERAL_STRINGS.ok, style: "cancel"}
+                                    ],
+                                    { cancelable: false }
+                                )
+                            )
+                        })
+                    })
+            )
         } else {
             setField([{name:"address", value:null}], (error, datasave) => {
                 this.setState({
-                    addressSelected:null,
-                    isLoadingDeliveryFee:false
+                    isLoadingDeliveryFee: false,
+                    deliveryFee: 0,
+                    validAddress: false
                 })
             })
         }
     }
 
     choosePaymentMethod() {
-        getCart((error, cart) => {
-            if (error) {
-                Alert.alert(GENERAL_STRINGS.warning, GENERAL_STRINGS.genericError)
+        ExternalMethods.hasUserLogged((isLogged) => {
+            if (isLogged) {
+                getCart((error, cart) => {
+                    if (error) {
+                        Alert.alert(GENERAL_STRINGS.warning, GENERAL_STRINGS.genericError)
+                    } else {
+                        ExternalMethods.registerFirebaseEvent(FirebaseActions.CART.actions.CHOOSE_PAYMENT, {})
+                        this.props.navigation.navigate("PaymentContainer", { cart : cart, idOrderType: this.state.deliveryMethod })
+                    }
+                })
             } else {
-                this.props.navigation.navigate("PaymentContainer", { cart : cart, idOrderType: this.state.deliveryMethod })
+                this.setState({
+                    isUserLoggedIn: isLogged
+                }, () => {
+                    this.props.setCurrentAddress(null)
+                    this.getCartData(isLogged)
+                })
             }
+        })
+    }
+
+    _changeAddress() {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CART.actions.CHANGE_ADDRESS, {})
+
+        this.setState({
+            showModalAddress: true
+        })
+    }
+
+    _closeModalAddress() {
+        this.setState({
+            showModalAddress: false
         })
     }
 
@@ -273,11 +319,13 @@ class CartController extends PureComponent {
         } else if (this.state.products.length == 0){
             return (
                 <View style={this.stylesView.noProducts} accessibilityLabel="viewNoProducts">
-                    <Text accessibilityLabel="text">{CART_CONTAINER_STRINGS.cartController.noProducts}</Text>
+                    <Text accessibilityLabel="text">
+                        { CART_CONTAINER_STRINGS.cartController.noProducts }
+                    </Text>
                 </View>
             )
         } else {
-            let canPay = this.state.isOutdoorDelivery ? !!this.state.addressSelected : !!this.state.deliveryMethod
+            let canPay = this.state.isOutdoorDelivery ? !!this.props.currentAddress : !!this.state.deliveryMethod
 
             return (
                 <ScrollView style = { this.stylesView.scrollview } accessibilityLabel="scrollView">
@@ -290,6 +338,7 @@ class CartController extends PureComponent {
                             deliveryMethod = { this.state.deliveryMethod }
                             unityImage = {this.state.logoUnity}
                             unityName = {this.state.nameUnity}
+                            onNavigateToUnity = { this.onNavigateToUnity }
                         />
                         <ListProducts
                             products = { this.state.products }
@@ -315,15 +364,15 @@ class CartController extends PureComponent {
                                 : <LoginUserComponent message = { LoginStrings.messageOrder }
                                                       signIn = { this.signIn.bind(this) }
                                                       shouldShowTopSeparator = { true }
-                                  />
-                            : this.state.isUserLoggedIn && !!this.state.addressSelected ?
+                                />
+                            : this.state.isUserLoggedIn && !!this.props.currentAddress && !!this.props.currentAddress.id && this.state.validAddress ?
                                 <View style = { this.stylesView.userLoggedIn }>
                                     <Address
-                                        address = { this.state.addressSelected }
+                                        address = { this.props.currentAddress }
                                         deliveryEstimatedTime = { this.state.deliveryEstimatedTime }
                                         deliveryEstimatedIdUnitTime = { this.state.deliveryEstimatedIdUnitTime }
                                         deliveryFee = { this.state.deliveryFee }
-                                        onSelectAddress = { this.onSelectAddress.bind(this) }
+                                        onSelectAddress = { this.changeAddress }
                                     />
                                     <PayCart
                                         choosePaymentMethod = { this.choosePaymentMethod.bind(this) }
@@ -337,10 +386,14 @@ class CartController extends PureComponent {
                                                         signIn = { this.signIn.bind(this) }
                                                         shouldShowTopSeparator = { true }
                                     />
-                                    : <SelectAddressComponent onSelectAddress = { this.onSelectAddress.bind(this) }
+                                    : <SelectAddressComponent onSelectAddress = { this.changeAddress }
                                                               shouldShowTopSeparator = { true }
                                     />
                         }
+                        <AddressListModal navigation = { this.props.navigation }
+                                          defaultAddressSelected = { this.closeModalAddress }
+                                          showModalAddress = { this.state.showModalAddress }
+                                          cameFromCart = { true }/>
                     </View>
                 </ScrollView>
             )
@@ -350,7 +403,8 @@ class CartController extends PureComponent {
 
 export default connect(
     state => ({
-        quantity: state.cart.quantity
+        quantity: state.cart.quantity,
+        currentAddress: state.general.currentAddress
     }),
-    { totalCart }
+    { totalCart, setCurrentAddress, setUnityId }
 )(CartController)

@@ -1,30 +1,25 @@
 import React, { Component } from "react"
-import { View, StyleSheet, Platform, AppState, Alert } from "react-native"
+import { View, StyleSheet, Platform, Alert, StatusBar } from "react-native"
+import { Provider } from "react-redux"
 import { CheckStack } from "../navigation/NavigationCheck"
 import { UnityListStack } from "../navigation/NavigationUnityList"
 import { OffersStack } from "../navigation/NavigationOffers"
+import { AddressStack } from "../navigation/NavigationAddress"
 import { setupModule } from "../configs"
-import { getCurrentLocation, callNativeLocationSettings, isDeviceConnected, configureStore } from "../utils"
+import { isDeviceConnected, configureStore, getStatusBarStyle } from "../utils"
 import { ExternalMethods, setExternalMethods } from "../native/Functions"
 import { setStyleWithDictionary } from "../theme/Theme"
-import { setIdUnity } from "../database/specialization/StorageUnity"
-import { saveHeaders, saveApiHeaders, saveEnvironment, saveGoogleApiKey, saveOrderType } from "../database/specialization/StorageGeneral"
-import { addCheck } from "../database/specialization/StorageCheck"
+import { saveApiHeaders, saveEnvironment, saveGoogleApiKey, saveOrderType, saveHeaders } from "../database/specialization/StorageGeneral"
 import { eraseAllData } from "../database/StorageBase"
-import { GENERAL_STRINGS, LOCATION_SETTINGS_STRINGS } from "../languages"
-import Permissions from "react-native-permissions"
 import Spinner from "../libs/customSpinner"
-import NoLocationWarning from "../components/messages/NoLocationWarning"
-import NoLocationFoundWarning from "../components/messages/NoLocationFoundWarning"
 import NoInternetWarning from "../components/messages/NoInternetWarning"
-import { Provider } from "react-redux"
-import { createStore, applyMiddleware } from "redux"
-import createSagaMiddleware from "redux-saga"
-import rootReducer from "../redux/reducers"
-import rootSaga from "../redux/sagas"
-import { setCheckNumber, setShowUnityHeaderWithInfo, setUnityId, setIsCheckMode, setIsOffersMode, setCurrentCartCheck, setIsOrderTypeSelectionMode } from "../redux/actions"
+import { setCheckNumber, setShowUnityHeaderWithInfo, setUnityId, setIsCheckMode, setIsDiscountsClubMode, setCurrentCartCheck, setIsOrderTypeSelectionMode, setCurrentAddress, setCurrentOpenOrders } from "../redux/actions"
 import * as Errors from "../errors"
+import User from "../models/User"
+import AddressService from "../api/services/AddressService"
+import OrderHistoryService from "../api/services/OrderHistoryService"
 
+var timer = null
 const mainStore = configureStore()
 
 function updateState(props) {
@@ -33,33 +28,34 @@ function updateState(props) {
     !!props.checkNumber ? mainStore.dispatch(setCheckNumber(props.checkNumber)) : null
     !!props.checkNumber ? mainStore.dispatch(setIsCheckMode(true)) : mainStore.dispatch(setIsCheckMode(false))
     !!props.checkNumber ? mainStore.dispatch(setCurrentCartCheck([])) : null
-    !!props.shouldGoToOffers ? mainStore.dispatch(setIsOffersMode(true)) : mainStore.dispatch(setIsOffersMode(false))
+    !!props.shouldGoToDiscountsClub ? mainStore.dispatch(setIsDiscountsClubMode(true)) : mainStore.dispatch(setIsDiscountsClubMode(false))
     !!props.shouldGoToOrderTypeSelection ? mainStore.dispatch(setIsOrderTypeSelectionMode(true)) : mainStore.dispatch(setIsOrderTypeSelectionMode(false))
 }
 
 class MainContainer extends Component {
 
     stylesView = StyleSheet.create({
-        noLocation: {
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center"
+        general: {
+            flex: 1
         }
     })
 
     constructor(props) {
         super(props)
 
+        //DISABLE YELLOW BOX
+        // console.disableYellowBox = true
+
         this.state = {
             goMainView: false,
-            latitude: null,
-            longitude: null,
             error: null,
             loading: true,
-            appState: AppState.currentState
+            shouldSelectLocation: true
         }
 
         this.updateNoOrders = this._updateNoOrders.bind(this)
+        this.defaultAddressSelected = this._defaultAddressSelected.bind(this)
+        this.checkInternet = this._checkInternet.bind(this)
 
         setStyleWithDictionary(props.stylesDictionary)
         setExternalMethods(props)
@@ -76,6 +72,15 @@ class MainContainer extends Component {
 
     componentDidMount() {
         updateState(this.props)
+
+        if (!this.props.checkNumber) {
+            this._getOpenOrders()
+            this._callTimer()
+        }
+    }
+
+    componentWillUnmount() {
+        clearInterval(timer)
     }
 
     initializeComponent() {
@@ -84,117 +89,76 @@ class MainContainer extends Component {
         saveEnvironment(this.props.homolog ? "homolog" : "prod")
         saveOrderType(this.props.orderType, (error, orderTypeStorage) => { })
 
-        this.requestUserPermission()
+        this._checkInternet()
     }
 
-    _handleAppStateChange = (nextAppState) => {
-        if (this.state.appState.match(/inactive|background/) && nextAppState === "active") {
-            this.requestUserPermission()
-        }
-
-        this.setState({appState: nextAppState})
+    _callTimer() {
+        clearInterval(timer)
+        timer = setInterval(() => {
+            this._getOpenOrders()
+        }, 10000)
     }
 
-    requestUserPermission(isTryingAgain = false) {
+    _getOpenOrders() {
+        OrderHistoryService.gerOrderHistory(true).then(result => {
+            mainStore.dispatch(setCurrentOpenOrders(result))
+        }).catch(error => {
+            mainStore.dispatch(setCurrentOpenOrders([]))
+        })
+    }
+
+    _checkInternet() {
         if (!this.state.loading) {
             this.setState({
                 loading: true,
                 error: null
             }, () => {
-                this.requestUserPermissionAux(isTryingAgain)
+                this._checkInternetAux()
             })
         } else {
-            this.requestUserPermissionAux(isTryingAgain)
+            this._checkInternetAux()
         }
     }
 
-    requestUserPermissionAux(isTryingAgain = false) {
+    _checkInternetAux() {
         isDeviceConnected(isConnected => {
             if (isConnected) {
-                if (!this.props.checkNumber && !this.props.unityId && !this.props.shouldGoToOrderStatus && !this.props.shouldGoToCart) {
-                    Permissions.request("location", {type: "whenInUse"}).then(response => {
-                        if (response == "authorized" || (isTryingAgain && Platform.OS === "ios")) {
-                            getCurrentLocation().then(position => {
-                                if (position == null) {
-                                    saveHeaders(0, 0)
-                                    this.setState({
-                                        loading: false,
-                                        latitude: null,
-                                        longitude: null,
-                                        error: null
-                                    })
-                                } else {
-                                    saveHeaders(position.coords.latitude, position.coords.longitude)
-                                    setTimeout(() => {
-                                        this.setState({
-                                            loading: false,
-                                            latitude: position.coords.latitude,
-                                            longitude: position.coords.longitude,
-                                            error: null
-                                        })
-                                        AppState.removeEventListener("change", this._handleAppStateChange)
-                                    }, 400)
-                                }
-                            }).catch(error => {
-                                if (error instanceof Errors.LocationSettingsException) {
-                                    this.setState({
-                                        loading: false,
-                                        latitude: null,
-                                        longitude: null,
-                                        error: error
-                                    }, () => {
-                                        setTimeout(() => {
-                                            Alert.alert(
-                                                LOCATION_SETTINGS_STRINGS.attention,
-                                                LOCATION_SETTINGS_STRINGS.needActivateGps,
-                                                [{
-                                                    text: GENERAL_STRINGS.no, style: "cancel"
-                                                },
-                                                    {
-                                                        text: GENERAL_STRINGS.yes,
-                                                        onPress: () => {
-                                                            callNativeLocationSettings()
-                                                            AppState.addEventListener("change", this._handleAppStateChange)
-                                                        }
-                                                    }], {cancelable: false}
-                                            )
-                                        }, 50)
-                                    })
-                                } else {
-                                    this.setState({
-                                        loading: false,
-                                        latitude: null,
-                                        longitude: null,
-                                        error: error
-                                    })
-                                }
-                            })
-                        } else {
-                            this.setState({
-                                loading: false,
-                                latitude: null,
-                                longitude: null,
-                                error: new Errors.LocationSettingsException()
-                            })
-                        }
-                    }).catch(error => {
-                        console.log(error) //IT'S NOT SUPPOSED TO FALL ON CATCH 
-                    })
-                } else {
-                    saveHeaders(0, 0)
+                saveHeaders(null, null)
+                this.setState({
+                    error: null
+                }, () => {
                     this.setState({
-                        loading: false,
-                        latitude: null,
-                        longitude: null,
-                        error: null
+                        shouldSelectLocation: !this.props.unityId && !this.props.shouldGoToCart && !this.props.shouldGoToOrderStatus
+                    }, () => {
+                        ExternalMethods.getUserLogged((errorUser, user) => {
+                            if (!!user) {
+                                let userLogged = new User(user)
+                                ExternalMethods.registerFirebaseUser(userLogged)
+
+                                AddressService.getDefaultAddress(user.sessionToken).then(address => {
+                                    mainStore.dispatch(setCurrentAddress(address))
+                                    this.setState({
+                                        loading: false,
+                                        shouldSelectLocation: false
+                                    })
+                                }).catch(error => {
+                                    this.setState({
+                                        loading: false
+                                    })
+                                })
+                            } else {
+                                ExternalMethods.registerFirebaseUser(new User())
+                                this.setState({
+                                    loading: false
+                                })
+                            }
+                        })
                     })
-                }
+                })
             } else {
                 this.setState({
                     loading: false,
-                    latitude: null,
-                    longitude: null,
-                    error: new Errors.ConnectionException(),
+                    error: new Errors.ConnectionException()
                 })
             }
         })
@@ -211,17 +175,9 @@ class MainContainer extends Component {
     }
 
     _renderError() {
-        if (this.state.error instanceof Errors.LocationException) {
+        if (this.state.error instanceof Errors.ConnectionException) {
             return (
-                <NoLocationFoundWarning tryLocation = { () => this.requestUserPermission(true) }/>
-            )
-        } else if (this.state.error instanceof Errors.LocationSettingsException) {
-            return (
-                <NoLocationWarning tryLocation = { () => this.requestUserPermission(true) }/>
-            )
-        } else if (this.state.error instanceof Errors.ConnectionException) {
-            return (
-                <NoInternetWarning tryInternet = { () => this.requestUserPermission() }/>
+                <NoInternetWarning tryInternet = { this.checkInternet }/>
             )
         } else {
             return (
@@ -230,29 +186,52 @@ class MainContainer extends Component {
         }
     }
 
+    _defaultAddressSelected() {
+        this.setState({
+            shouldSelectLocation: false
+        })
+    }
+
     /**
      * ...this.props send props to all children
      */
     render() {
         var propsContainer = {
             updateNoOrders: this.updateNoOrders,
-            latitude: this.state.latitude,
-            longitude: this.state.longitude,
             ...this.props
         }
 
+        let barStyle = getStatusBarStyle()
+
         if (this.state.loading) {
             return (
-                <Spinner visible = { true }/>
+                <View style = { this.stylesView.general }>
+                    <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                    <Spinner visible = { true }/>
+                </View>
             )
-        } else if (!!this.state.error) {
+        } else if (this.state.shouldSelectLocation) {
+            propsContainer.defaultAddressSelected = this.defaultAddressSelected
+
+            return (
+                <Provider store = { mainStore }>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <AddressStack initialRouteName = { "AddressListContainer" } screenProps = { propsContainer }/>
+                    </View>
+                </Provider>
+            )
+        }  else if (!!this.state.error) {
             return (
                 this._renderError()
             )
         } else if (!!this.props.checkNumber && !!this.props.unityId) {
             return (
                 <Provider store = { mainStore }>
-                    <CheckStack initialRouteName = { "CheckInitialContainer" } screenProps = { propsContainer }/>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <CheckStack initialRouteName = { "CheckInitialContainer" } screenProps = { propsContainer }/>
+                    </View>
                 </Provider>
             )
         } else if (this.props.shouldGoToOrderStatus && !this.state.goMainView) {
@@ -264,7 +243,10 @@ class MainContainer extends Component {
 
             return (
                 <Provider store = { mainStore }>
-                    <UnityListStack initialRouteName = { "OrderHistoryListContainer" } screenProps = { propsContainer }/>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <UnityListStack initialRouteName = { "OrderHistoryListContainer" } screenProps = { propsContainer }/>
+                    </View>
                 </Provider>
             )
         } else if (this.props.shouldGoToCart && !this.state.goMainView) {
@@ -276,10 +258,12 @@ class MainContainer extends Component {
 
             return (
                 <Provider store = { mainStore }>
-                    <UnityListStack initialRouteName = { "CartContainer" } screenProps = { propsContainer }/>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <UnityListStack initialRouteName = { "CartContainer" } screenProps = { propsContainer }/>
+                    </View>
                 </Provider>
             )
-
         } else if (this.props.unityId) {
             propsContainer.shouldCloseModule = true
             propsContainer.shouldCartCloseModule = false
@@ -289,13 +273,10 @@ class MainContainer extends Component {
 
             return (
                 <Provider store = { mainStore }>
-                    <UnityListStack initialRouteName = { "NewUnityDetailContainer" } screenProps = { propsContainer }/>
-                </Provider>
-            )
-        } else if (this.props.shouldGoToOffers) {
-            return (
-                <Provider store = { mainStore }>
-                    <OffersStack initialRouteName = { "OffersContainer" } screenProps = { propsContainer }/>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <UnityListStack initialRouteName = { "NewUnityDetailContainer" } screenProps = { propsContainer }/>
+                    </View>
                 </Provider>
             )
         } else if (this.props.shouldGoToOrderTypeSelection) {
@@ -307,7 +288,19 @@ class MainContainer extends Component {
 
             return (
                 <Provider store = { mainStore }>
-                    <UnityListStack initialRouteName = { "OrderTypeSelectionContainer" } screenProps = { propsContainer }/>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <UnityListStack initialRouteName = { "OrderTypeSelectionContainer" } screenProps = { propsContainer }/>
+                    </View>
+                </Provider>
+            )
+        } else if (this.props.shouldGoToDiscountsClub) {
+            return (
+                <Provider store = { mainStore }>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <OffersStack initialRouteName = { "DiscountsClubHomeContainer" } screenProps = { propsContainer }/>
+                    </View>
                 </Provider>
             )
         } else {
@@ -319,7 +312,10 @@ class MainContainer extends Component {
 
             return (
                 <Provider store = { mainStore }>
-                    <UnityListStack initialRouteName = { "UnityListContainer" } screenProps = { propsContainer }/>
+                    <View style = { this.stylesView.general }>
+                        <StatusBar barStyle = { barStyle } accessibilityLabel = "statusBar"/>
+                        <UnityListStack initialRouteName = { "UnityListContainer" } screenProps = { propsContainer }/>
+                    </View>
                 </Provider>
             )
         }
@@ -332,7 +328,7 @@ MainContainer.defaultProps = {
     shouldGoToCart: false,
     shouldGoToOrderStatus: false,
     shouldGoToOrderTypeSelection: false,
-    shouldGoToOffers: false,
+    shouldGoToDiscountsClub: false,
     hideMainBackButton: false,
     hideButtonNoOrders: false,
     showUnityHeaderWithInfo: true,

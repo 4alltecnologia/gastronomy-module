@@ -1,7 +1,7 @@
 import React, { Component } from "react"
-import { Alert, View, ScrollView, StyleSheet, StatusBar } from "react-native"
-import { isDeviceConnected, paymentMethod, getUnityMedia, MediaTypes } from "../../utils"
-import { checkPayment } from "../../api/ApiRequests"
+import { Alert, View, ScrollView, StyleSheet } from "react-native"
+import { isDeviceConnected, paymentMethod, getUnityMedia, MediaTypes, FirebaseActions } from "../../utils"
+import { checkPayment } from "../../api/APIRequests"
 import { ExternalMethods } from "../../native/Functions"
 import { FontColor } from "../../theme/Theme"
 import { GENERAL_STRINGS } from "../../languages/index"
@@ -10,6 +10,7 @@ import Spinner from "../../libs/customSpinner"
 import NoInternetWarning from "../../components/messages/NoInternetWarning"
 import CheckPaymentComponent from "./CheckPaymentComponent"
 import { connect } from "react-redux"
+import User from "../../models/User"
 
 class CheckPaymentController extends Component {
 
@@ -33,7 +34,7 @@ class CheckPaymentController extends Component {
             unityDetails: !!props.unityDetails ? props.unityDetails : "",
             totalPrice: !!props.totalPrice ? props.totalPrice : 0,
             cardId: null,
-            selectedPaymentMethod: paymentMethod.CREDITCARD
+            selectedPaymentMethod: PAYMENT_METHOD.CREDITCARD
         }
 
         this.callLogin = this._callLogin.bind(this)
@@ -44,10 +45,15 @@ class CheckPaymentController extends Component {
         this.onPayCheck = this._onPayCheck.bind(this)
     }
 
+    componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.CHECK_PAYMENT.screen)
+    }
+
     _callLogin() {
-        ExternalMethods.startLogin((resultLogin) => {
+        ExternalMethods.startLogin((user) => {
+            ExternalMethods.registerFirebaseUser(new User(user))
             this.setState({
-                isUserLoggedIn: resultLogin,
+                isUserLoggedIn: !!user,
                 isLoading: true
             }, () => this._getProductList() )
         })
@@ -67,9 +73,10 @@ class CheckPaymentController extends Component {
     }
 
     _onChangePaymentMethod(newPaymentMethod) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.CHECK_PAYMENT.actions.CHANGED_PAYMENT_METHOD, { paymentMethod: newPaymentMethod.key })
         this.setState({
             selectedPaymentMethod: newPaymentMethod,
-            cardId: newPaymentMethod.name == paymentMethod.WALLET.name ? paymentMethod.WALLET.cardIdName : this.state.cardId
+            cardId: newPaymentMethod.name == PAYMENT_METHOD.WALLET.name ? PAYMENT_METHOD.WALLET.cardIdName : this.state.cardId
         })
     }
 
@@ -88,12 +95,15 @@ class CheckPaymentController extends Component {
                     if (!!errorUser || !resultUser) {
                         this.setState({
                                 isLoading: false
-                            }, () => ExternalMethods.startLogin((resultLogin) => {
+                            }, () => ExternalMethods.startLogin((user) => {
+                                ExternalMethods.registerFirebaseUser(new User(user))
                                 this._onPayCheck()
                             })
                         )
                     } else {
-                        checkPayment(this.state.orderId, resultUser.sessionToken, this.state.cardId, this.state.selectedWalletPaymentMethod.id).then(paymentResult => {
+                        ExternalMethods.registerFirebaseEvent(FirebaseActions.CHECK_PAYMENT.actions.PAY, { checkNumber: this.state.checkNumber, unityId: this.state.unityId, paymentMethod: this.state.selectedPaymentMethod.key })
+                        checkPayment(this.state.orderId, resultUser.sessionToken, this.state.cardId, this.state.selectedPaymentMethod.id).then(paymentResult => {
+                            ExternalMethods.registerFirebaseEvent(FirebaseActions.CHECK_PAYMENT.actions.PAY_SUCCESS, {})
                             removeCheck(this.state.checkNumber, this.state.unityId, (error, data) => {
                                 this.setState({
                                     isLoading: false
@@ -127,7 +137,7 @@ class CheckPaymentController extends Component {
     _renderFirstLoad() {
         return (
             <View>
-                <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                <Spinner visible = { this.state.isLoading } size = { 115 }/>
             </View>
         )
     }
@@ -135,7 +145,7 @@ class CheckPaymentController extends Component {
     _renderNoInternet() {
         return (
             <View style = { this.stylesView.general }>
-                <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                <Spinner visible = { this.state.isLoading } size = { 115 }/>
                 <NoInternetWarning tryInternet = { () => this._onIsDeviceConnected(true) }/>
             </View>
         )
@@ -149,7 +159,7 @@ class CheckPaymentController extends Component {
         } else {
             return (
                 <View style = { this.stylesView.general }>
-                    <Spinner visible = { this.state.isLoading } size = { 115 } textContent = { GENERAL_STRINGS.loading }/>
+                    <Spinner visible = { this.state.isLoading } size = { 115 }/>
                     <CheckPaymentComponent unityName = { this.state.unityDetails.name }
                                            unityLogoURL = { getUnityMedia(MediaTypes.LOGO, this.state.unityDetails.media) }
                                            checkName = { this.state.checkName }

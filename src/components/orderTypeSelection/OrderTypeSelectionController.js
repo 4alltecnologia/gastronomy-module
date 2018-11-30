@@ -1,16 +1,14 @@
 import React, { PureComponent } from "react"
 import { StyleSheet, View, ScrollView, Alert } from "react-native"
-import AddressService from "../address/AddressService"
-import { getOrder, saverOrder } from "../../database/specialization/StorageOrder"
+import { connect } from "react-redux"
+import { setCurrentAddress } from "../../redux/actions"
 import { saveOrderType } from "../../database/specialization/StorageGeneral"
-import { GENERAL_STRINGS, ORDER_STATUS_CONTROLLER_STRINGS as OrderStrings} from "../../languages/index"
-import { IdOrderType, getOrderTypeIcon, getCurrentLocation } from "../../utils"
-import Images from "../../assets/index"
-import Spinner from "../../libs/customSpinner"
+import { IdOrderType, getOrderTypeIcon, getCurrentLocation, FirebaseActions } from "../../utils"
 import OrderTypeSelectionComponent from "./OrderTypeSelectionComponent"
-import OrderTypeSelectionItem from "./model/OrderTypeSelectionItem"
+import OrderTypeSelection from "../../models/orderType/OrderTypeSelection"
+import { ExternalMethods } from "../../native/Functions"
 
-export default class OrderTypeSelectionController extends PureComponent {
+class OrderTypeSelectionController extends PureComponent {
 
     constructor(props) {
         super(props)
@@ -18,28 +16,23 @@ export default class OrderTypeSelectionController extends PureComponent {
         this.state = {
             loading: true,
             address: "",
-            orderTypeSelectionList: [new OrderTypeSelectionItem(IdOrderType.DELIVERY.name, getOrderTypeIcon(IdOrderType.DELIVERY.id), IdOrderType.DELIVERY),
-                                     new OrderTypeSelectionItem(IdOrderType.TAKEAWAY.name, getOrderTypeIcon(IdOrderType.TAKEAWAY.id), IdOrderType.TAKEAWAY)]
+            orderTypeSelectionList: [new OrderTypeSelection(IdOrderType.DELIVERY.name, getOrderTypeIcon(IdOrderType.DELIVERY.id), IdOrderType.DELIVERY),
+                                     new OrderTypeSelection(IdOrderType.TAKEAWAY.name, getOrderTypeIcon(IdOrderType.TAKEAWAY.id), IdOrderType.TAKEAWAY)]
         }
-        
+
         this.onPressOrderType = this._onPressOrderType.bind(this)
     }
 
-    componentWillMount() {
-        this._retrieveAddress()
-    }
+    componentDidMount() {
+        ExternalMethods.registerFirebaseScreen(FirebaseActions.ORDER_TYPE.screen)
 
-    _retrieveAddress() {
-        getCurrentLocation().then(position => {
-            AddressService.getUserAddress(position.coords.latitude, position.coords.longitude).then(address => {
-                this.setState({
-                    address: address
-                })
-            }).catch(error => { })
-        }).catch(error => { })
+        this.props.navigation.addListener("willFocus", payload => {
+            ExternalMethods.registerFirebaseScreen(FirebaseActions.ORDER_TYPE.screen)
+        })
     }
 
     _onPressOrderType(orderType) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.ORDER_TYPE.actions.SELECT_TYPE, { orderType: orderType.key })
         saveOrderType([orderType.id], (error, orderTypeStorage) => {
             this.props.navigation.navigate("UnityListContainer")
         })
@@ -48,9 +41,16 @@ export default class OrderTypeSelectionController extends PureComponent {
     render() {
         return (
             <OrderTypeSelectionComponent orderTypeSelectionList = { this.state.orderTypeSelectionList }
-                                         address = { this.state.address }
+                                         address = { this.props.currentAddress }
                                          onPressOrderType = { this.onPressOrderType }
             />
         )
     }
 }
+
+export default connect(
+    state => ({
+        currentAddress: state.general.currentAddress
+    }),
+    { setCurrentAddress }
+) ( OrderTypeSelectionController )

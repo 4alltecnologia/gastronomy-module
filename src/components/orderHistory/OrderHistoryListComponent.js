@@ -3,9 +3,10 @@ import { View, StyleSheet, RefreshControl, FlatList, Platform } from "react-nati
 import { LANGUAGE } from "../../configs"
 import Images from "../../assets/index"
 import { ORDER_STATUS_COMPONENT_STRINGS as OrderStrings, GENERAL_STRINGS } from "../../languages/index"
-import { screenWidthPercentage, screenHeightPercentage, getOrderStatusMessage, OrderStatus, getUnityMedia, MediaTypes, isOrderStatusBeingUsed, UsedOutdoorDeliveryOrderStatus, UsedIndoorDeliveryOrderStatus, formatPrice, IdOrderType } from "../../utils"
+import { screenWidthPercentage, screenHeightPercentage, getOrderStatusMessage, OrderStatus, getUnityMedia, MediaTypes, isOrderStatusBeingUsed, UsedOutdoorDeliveryOrderStatus, UsedIndoorDeliveryOrderStatus, formatPrice, IdOrderType, FirebaseActions } from "../../utils"
 import { FontFamily, FontWeight, FontColor, BackgroundColor } from "../../theme/Theme"
 import OrderHistoryCellComponent from "./OrderHistoryCellComponent"
+import { ExternalMethods } from "../../native/Functions"
 
 let CURRENT_SCROLL_OFFSET = 0
 const SCREEN_HEIGHT = screenHeightPercentage(100)
@@ -56,10 +57,11 @@ export default class OrderHistoryListComponent extends Component {
     }
 
     _onRefresh() {
-        this.props.refreshList()
+        this.props.refreshList(true)
     }
 
     _onTapCell(index) {
+        ExternalMethods.registerFirebaseEvent(FirebaseActions.ORDER_HISTORY.actions.EXPANDED, { orderId: this.state.orderList[index].id })
         this.setState({
             selectedIndex: this.state.selectedIndex == index ? 99 : index
         }, () => this._scrollTo(index))
@@ -102,7 +104,7 @@ export default class OrderHistoryListComponent extends Component {
         if (this.state.selectedIndex == index) {
             listStatus = item.orderStatusLog.filter((status, index, self) => self.findIndex(statusToFilter => statusToFilter.idOrderStatus === status.idOrderStatus) === index).filter((status) => isOrderStatusBeingUsed(status.idOrderStatus, item.idOrderType == IdOrderType.DELIVERY.id ? true : false) == true)
             isOpen = true
-            orderDeliveryFee = formatPrice(item.deliveryFee)
+            orderDeliveryFee = !!item.deliveryFee ? formatPrice(item.deliveryFee) : OrderStrings.freeOrderDelivery
             orderDeliveryTotal = formatPrice(item.total)
             orderItems = item.orderItems
 

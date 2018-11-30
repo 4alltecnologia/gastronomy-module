@@ -3,7 +3,7 @@ import { Image, ImageBackground, View, Text, TouchableOpacity, StyleSheet } from
 import { FontFamily, FontColor, FontWeight, BackgroundColor } from "../../theme/Theme"
 import { PAYMENT_NOW_WALLET_COMPONENT_STRINGS as PaymentStrings } from "../../languages/index"
 import Images from "../../assets/index"
-import { paymentMethod, screenWidthPercentage } from "../../utils"
+import { PAYMENT_METHOD, screenWidthPercentage } from "../../utils"
 import WalletAccountBalanceComponent from "./WalletAccountBalanceComponent"
 
 export default class PaymentNowWalletComponent extends Component {
@@ -116,7 +116,7 @@ export default class PaymentNowWalletComponent extends Component {
         super(props)
 
         this.state = {
-            isWallet: props.selectedPaymentMethod.name == paymentMethod.WALLET.name ? true : false,
+            isWallet: props.selectedPaymentMethod.name == PAYMENT_METHOD.WALLET.name ? true : false,
             selectedPaymentMethod: props.selectedPaymentMethod
         }
 
@@ -126,13 +126,13 @@ export default class PaymentNowWalletComponent extends Component {
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            isWallet: nextProps.selectedPaymentMethod.name == paymentMethod.WALLET.name ? true : false,
+            isWallet: nextProps.selectedPaymentMethod.name == PAYMENT_METHOD.WALLET.name ? true : false,
             selectedPaymentMethod: nextProps.selectedPaymentMethod
         })
     }
 
     _onIsWallet() {
-        this.props.onPayNowTapped(paymentMethod.WALLET)
+        this.props.onPayNowTapped(PAYMENT_METHOD.WALLET)
     }
 
     _onChangePaymentMethod(newPaymentMethod) {

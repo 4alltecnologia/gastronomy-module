@@ -1,9 +1,9 @@
-import React, { Component } from "react"
+import React, { PureComponent } from "react"
 import { StyleSheet } from "react-native"
 import { SafeAreaView } from "react-navigation"
 import OrderTypeSelectionController from "../components/orderTypeSelection/OrderTypeSelectionController"
 
-export default class OrderTypeSelectionContainer extends Component {
+export default class OrderTypeSelectionContainer extends PureComponent {
 
     stylesView = StyleSheet.create({
         safeArea: {

@@ -45,7 +45,8 @@ export default class NewUnityDetailContainer extends PureComponent {
     render() {
         return(
             <SafeAreaView forceInset = {{ bottom: "never" }} style = { this.stylesView.safeArea }>
-                <UnityDetailsController distanceKm = { this.state.distanceKm }
+                <UnityDetailsController navigation = { this.props.navigation }
+                                        distanceKm = { this.state.distanceKm }
                                         userLatitude = { this.state.userLatitude }
                                         userLongitude = { this.state.userLongitude }
                                         setUnityName = { this.setUnityName }
